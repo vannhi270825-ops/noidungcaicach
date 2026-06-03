@@ -432,25 +432,50 @@
       btnSubmit.disabled = true;
       btnSubmit.classList.add('opacity-75');
 
-      google.script.run.withSuccessHandler(function(response) {
-        btnSubmit.innerHTML = "NỘP DỮ LIỆU THẢO LUẬN ✔";
-        btnSubmit.disabled = false;
-        btnSubmit.classList.remove('opacity-75');
+      // 1. ĐƯỜNG LINK WEB APP GOOGLE BẠN VỪA TRIỂN KHAI (Dán vào giữa 2 dấu nháy đơn)
+  const webAppUrl = 'https://script.google.com/macros/s/AKfycbyo3VQn_SEol8nVA0ARKBJtr-QCMWjBFRg3Mraq758DVZCokNSpZC4AUsd4Fv4B0ucW/exec';
 
-        if (response.success) {
-          document.getElementById('rev-group').innerText = currentSelectedGroup;
-          document.getElementById('rev-members').innerText = members;
-          document.getElementById('rev-tengoi').innerText = tenGoi;
-          document.getElementById('rev-thanhphan').innerText = thanhPhan;
-          document.getElementById('rev-nhiemvu').innerText = nhiemVu;
-          document.getElementById('rev-ynghia').innerText = yNghia;
-          
-          document.getElementById('student-work-step').classList.add('hidden');
-          document.getElementById('student-review-step').classList.remove('hidden');
-        } else {
-          alert("Lỗi lưu trữ: " + response.error);
-        }
-      }).submitStudentTask(payload);
+  // 2. TỰ ĐỘNG THU THẬP DỮ LIỆU ĐỂ GỬI SANG GOOGLE SHEETS
+  const data = {
+    Nhom: currentSelectedGroup,
+    ThanhVien: members,
+    TenGoi: document.getElementById('ans-tenGoi')?.value || tenGoi1,
+    ThanhPhan: document.getElementById('ans-thanhPhan')?.value || '',
+    NhiemVu: document.getElementById('ans-nhiemVu')?.value || '',
+    YNghem: document.getElementById('ans-yNghia')?.value || ''
+  };
+
+  // 3. LỆNH FETCH ĐỂ GỬI DỮ LIỆU VÀ GIẢI PHÓNG TRẠNG THÁI ĐƠ
+  fetch(webAppUrl, {
+    method: 'POST',
+    mode: 'no-cors', 
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(function() {
+    // Mở khóa trạng thái treo đơ cho nút bấm
+    btnSubmit.innerHTML = "NỘP DỮ LIỆU THẢO LUẬN ✔️";
+    btnSubmit.disabled = false;
+    btnSubmit.classList.remove('opacity-75');
+
+    // Hiển thị phần xem lại kết quả (giữ nguyên logic cũ của bạn)
+    document.getElementById('student-work-step').classList.add('hidden');
+    document.getElementById('student-review-step').classList.remove('hidden');
+    
+    // Reset lại form để xóa dữ liệu cũ trong các ô nhập
+    resetStudentForm();
+    
+    alert("Nộp bài thảo luận thành công!");
+  })
+  .catch(function(error) {
+    // Mở khóa nút bấm nếu lỗi mạng để học sinh bấm nộp lại
+    btnSubmit.innerHTML = "THỬ LẠI ❌";
+    btnSubmit.disabled = false;
+    btnSubmit.classList.remove('opacity-75');
+    alert("Lỗi kết nối mạng: " + error.toString());
+  });
     }
 
     function resetStudentForm() {
