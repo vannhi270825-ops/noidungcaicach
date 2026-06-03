@@ -504,21 +504,36 @@
       btn.innerText = "Đang kiểm tra...";
       btn.disabled = true;
 
-     // 1. GỬI YÊU CẦU KIỂM TRA MẬT KHẨU VÀ LẤY DỮ LIỆU VỀ GITHUB
-  fetch(webAppUrl + '?action=getTeacherData&pass=' + encodeURIComponent(pass))
-  .then(response => response.json())
-  .then(data => {
-    // Mở khóa nút bấm ngay khi có phản hồi
-    btn.innerText = "Mở Khóa";
-    btn.disabled = false;
+    // 2. Hàm khởi tạo giao diện và xử lý yêu cầu lấy dữ liệu từ GitHub sang
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === "getTeacherData") {
+    const pass = e.parameter.pass;
+    
+    // Kiểm tra mật khẩu (khớp với mật khẩu TEACHER_PASSWORD của bạn)
+    if (pass !== TEACHER_PASSWORD) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Sai mật khẩu" }))
+                           .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Kết nối đến file Google Sheets của bạn bằng ID để lấy dữ liệu trả về GitHub
+    const ss = SpreadsheetApp.openById('1lI1KiIHAkRzGbEvnYlpLUwSGFlqe7uapKoeQCF-QvM8');
+    const sheet = ss.getSheetByName("Submissions");
+    const rows = sheet.getDataRange().getValues();
+    
+    // Bỏ hàng tiêu đề đầu tiên, chỉ lấy các hàng dữ liệu bài nộp của học sinh
+    const studentData = rows.slice(1); 
+    
+    return ContentService.createTextOutput(JSON.stringify({ success: true, data: studentData }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
 
-    if (data.success) {
-      // Đăng nhập đúng: Chạy toàn bộ logic hiển thị giao diện cũ của bạn
-      teacherPasswordSaved = pass;
-      document.getElementById('teacher-auth-box').classList.add('hidden');
-      document.getElementById('teacher-dashboard').classList.remove('hidden');
-      
-      // Đổ dữ liệu học sinh thảo luận vào bảng điều khiển của bạn
+  // Mặc định khởi tạo giao diện nếu chạy trực tiếp trên hệ thống của Google
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .setTitle('Hệ Thống Thảo Luận Nhóm - Triều Nguyễn')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
       if (typeof updateTeacherDashboard === 'function') {
         updateTeacherDashboard(data.data);
       }
