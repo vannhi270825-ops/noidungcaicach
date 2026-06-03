@@ -1,623 +1,617 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
+ <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thảo Luận Nhóm Lịch Sử - Triều Nguyễn</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Hệ thống Nhiệm vụ Học nhóm</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
   <style>
-    .tab-active { border-bottom-width: 4px; border-color: #2563eb; color: #1d4ed8; font-weight: bold; }
-    .keyword { font-weight: bold; color: #dc2626; background-color: #fee2e2; padding: 0 4px; border-radius: 4px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #app { height: 100%; width: 100%; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    .tab-btn { transition: all 0.3s ease; }
+    .tab-btn.active { border-bottom: 3px solid #1e40af; color: #1e40af; }
+    .tab-btn:hover { color: #1e40af; }
+    
+    .card-shadow { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+    .group-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .group-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+    
+    .btn-primary { background: linear-gradient(135deg, #1e40af, #1e3a8a); transition: all 0.2s; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .input-field { transition: border-color 0.2s, box-shadow 0.2s; }
+    .input-field:focus { border-color: #1e40af; box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); }
+    
+    .fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .task-box { background: #f0f9ff; border-left: 4px solid #1e40af; }
+    .answer-section { background: #fef3c7; border: 1px solid #fcd34d; }
   </style>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
-
-  <div class="max-w-6xl mx-auto px-4 pt-6">
-    <div class="flex border-b border-slate-300 bg-white rounded-t-xl shadow-sm overflow-hidden">
-      <button id="btn-tab-student" onclick="switchMainTab('student')" class="w-1/2 py-4 text-center text-lg font-medium tab-active transition-all hover:bg-slate-50">
-        👨‍🎓 KHU VỰC HỌC SINH
-      </button>
-      <button id="btn-tab-teacher" onclick="switchMainTab('teacher')" class="w-1/2 py-4 text-center text-lg font-medium text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition-all">
-        👑 KHU VỰC GIÁO VIÊN
-      </button>
+  <style>body { box-sizing: border-box; }</style>
+ <script src="/_sdk/telemetry_sdk.js"></script></head>
+ <body class="bg-gradient-to-br from-slate-50 to-slate-100">
+  <div id="app" class="w-full h-full overflow-auto"><!-- Tabs Navigation -->
+   <div class="sticky top-0 z-40 bg-white border-b border-slate-200 card-shadow">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex gap-8"><button id="student-tab" class="tab-btn active text-lg font-semibold pb-2 px-2 border-b-4 border-blue-600 text-blue-600"> <i data-lucide="book-open" style="display: inline; width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;"></i> Học sinh </button> <button id="teacher-tab" class="tab-btn text-lg font-semibold pb-2 px-2 text-slate-600"> <i data-lucide="user-check" style="display: inline; width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;"></i> Giáo viên </button>
     </div>
-  </div>
-
-  <div id="tab-student" class="max-w-6xl mx-auto px-4 pb-12">
-    <div class="bg-white p-6 md:p-8 rounded-b-xl shadow-md border-x border-b border-slate-200">
-      
-      <div id="student-setup-step" class="space-y-6 max-w-2xl mx-auto py-8">
-        <div class="text-center space-y-2 mb-8">
-          <h2 class="text-3xl font-extrabold text-blue-800">THẢO LUẬN NHÓM</h2>
-          <p class="text-slate-600">Tìm hiểu tổ chức bộ máy nhà nước triều Nguyễn (1802-1858)</p>
+   </div><!-- STUDENT TAB -->
+   <div id="student-view" class="fade-in"><!-- Step 1: Group Selection -->
+    <div id="step-group-selection" class="p-6">
+     <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold text-slate-800 mb-2">Chọn Nhóm Của Bạn</h1>
+      <p class="text-slate-600 mb-8">Chọn nhóm và nhập tên các thành viên để bắt đầu</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200 cursor-pointer hover:border-blue-400" onclick="selectGroup('1', 'Nội Các')">
+        <div class="flex items-start justify-between mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 1</h3><i data-lucide="arrow-right" style="width: 24px; height: 24px; color: #1e40af;"></i>
         </div>
-        
-        <div class="space-y-2">
-          <label class="block text-sm font-bold text-slate-700">1. Vui lòng chọn Nhóm của em:</label>
-          <select id="student-group-select" class="w-full p-4 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer">
-            <option value="">-- Nhấp để chọn nhóm thảo luận --</option>
-            <option value="Nội các">Nhóm 1: Nội các</option>
-            <option value="Cơ mật viện">Nhóm 2: Cơ mật viện</option>
-            <option value="Lục bộ">Nhóm 3: Lục bộ</option>
-            <option value="Đô sát viện">Nhóm 4: Đô sát viện</option>
-          </select>
+        <p class="text-lg font-semibold text-blue-600 mb-2">Nội Các</p>
+        <p class="text-slate-600 text-sm">Cơ quan văn phòng và quản lý tài liệu của triều đình</p>
+       </div>
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200 cursor-pointer hover:border-blue-400" onclick="selectGroup('2', 'Cơ Mật Viện')">
+        <div class="flex items-start justify-between mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 2</h3><i data-lucide="arrow-right" style="width: 24px; height: 24px; color: #1e40af;"></i>
         </div>
-
-        <div class="space-y-2">
-          <label class="block text-sm font-bold text-slate-700">2. Điền tên các thành viên trong nhóm:</label>
-          <textarea id="student-members-input" rows="3" placeholder="Ví dụ: Nguyễn Văn A, Trần Thị B, Lê Văn C..." class="w-full p-4 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none transition-all"></textarea>
+        <p class="text-lg font-semibold text-blue-600 mb-2">Cơ Mật Viện</p>
+        <p class="text-slate-600 text-sm">Hội đồng tư vấn tối cao cho Hoàng đế</p>
+       </div>
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200 cursor-pointer hover:border-blue-400" onclick="selectGroup('3', 'Lục Bộ')">
+        <div class="flex items-start justify-between mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 3</h3><i data-lucide="arrow-right" style="width: 24px; height: 24px; color: #1e40af;"></i>
         </div>
-
-        <button onclick="startStudentTask()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg shadow-md transition-all transform hover:-translate-y-0.5 active:translate-y-0">
-          BẮT ĐẦU THỰC HIỆN NHIỆM VỤ 🚀
-        </button>
+        <p class="text-lg font-semibold text-blue-600 mb-2">Lục Bộ</p>
+        <p class="text-slate-600 text-sm">Sáu bộ phận hành chính chủ chốt của triều đình</p>
+       </div>
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200 cursor-pointer hover:border-blue-400" onclick="selectGroup('4', 'Đô Sát Viện')">
+        <div class="flex items-start justify-between mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 4</h3><i data-lucide="arrow-right" style="width: 24px; height: 24px; color: #1e40af;"></i>
+        </div>
+        <p class="text-lg font-semibold text-blue-600 mb-2">Đô Sát Viện</p>
+        <p class="text-slate-600 text-sm">Cơ quan giám sát và thanh tra trung ương</p>
+       </div>
       </div>
-
-      <div id="student-work-step" class="hidden space-y-8 animate-fade-in">
-        <div class="text-center border-b-2 border-blue-500 pb-4">
-          <span class="text-sm font-bold text-blue-600 uppercase tracking-widest">Không Gian Làm Việc</span>
-          <h1 id="display-group-name" class="text-4xl font-black text-slate-900 mt-2">TÊN NHÓM</h1>
+     </div>
+    </div><!-- Step 2: Enter Members -->
+    <div id="step-members" class="p-6 hidden">
+     <div class="max-w-2xl mx-auto"><button onclick="backToGroupSelection()" class="mb-6 text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800"> <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i> Quay lại </button>
+      <h2 class="text-2xl font-bold text-slate-800 mb-2">Nhập Tên Thành Viên</h2>
+      <p class="text-slate-600 mb-6">Nhóm: <span id="selected-group-name" class="font-bold text-blue-600"></span></p>
+      <div class="bg-white rounded-lg p-6 card-shadow">
+       <div id="members-input-container" class="space-y-4 mb-6">
+        <div><label class="block text-sm font-semibold text-slate-700 mb-2">Thành viên 1</label> <input type="text" id="member-1" placeholder="Nhập tên thành viên" class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2">
         </div>
-
-        <div class="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-r-lg shadow-sm">
-          <h3 class="font-bold text-amber-800 flex items-center mb-2">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-            YÊU CẦU NHIỆM VỤ
-          </h3>
-          <p class="text-sm text-amber-900 leading-relaxed text-justify">
-            Mỗi nhóm sẽ được giao nhiệm vụ nghiên cứu và trình bày về một cơ quan trung ương của triều Nguyễn trong giai đoạn 1802-1858. Bài trình bày cần làm rõ bốn khía cạnh: Tên gọi cơ quan chuyên môn, Thành phần cấu tạo, Nhiệm vụ và vai trò chính, cùng Ý nghĩa đối với bộ máy quản lý nhà nước quân chủ chuyên chế. Các nhóm sử dụng thông tin từ phần tư liệu dưới đây để đảm bảo tính chính xác và chuyên sâu.
-          </p>
+        <div><label class="block text-sm font-semibold text-slate-700 mb-2">Thành viên 2</label> <input type="text" id="member-2" placeholder="Nhập tên thành viên" class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2">
         </div>
-
-        <div class="bg-slate-100 p-6 rounded-xl border border-slate-200 shadow-inner">
-          <h3 class="font-bold text-slate-800 text-lg mb-3 flex items-center">
-            📖 TƯ LIỆU LỊCH SỬ DÀNH CHO NHÓM:
-          </h3>
-          <p id="display-group-material" class="text-base text-slate-800 leading-relaxed bg-white p-5 rounded-lg border border-slate-300 shadow-sm whitespace-pre-line text-justify"></p>
+        <div><label class="block text-sm font-semibold text-slate-700 mb-2">Thành viên 3</label> <input type="text" id="member-3" placeholder="Nhập tên thành viên" class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2">
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-          <div class="space-y-2">
-            <label class="block font-bold text-blue-900">A. Tên gọi cơ quan chuyên môn:</label>
-            <textarea id="ans-tenGoi" rows="4" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-sm" placeholder="Nhập câu trả lời của nhóm..."></textarea>
-          </div>
-          <div class="space-y-2">
-            <label class="block font-bold text-blue-900">B. Thành phần cấu tạo:</label>
-            <textarea id="ans-thanhPhan" rows="4" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-sm" placeholder="Nhập câu trả lời của nhóm..."></textarea>
-          </div>
-          <div class="space-y-2">
-            <label class="block font-bold text-blue-900">C. Nhiệm vụ và vai trò chính:</label>
-            <textarea id="ans-nhiemVu" rows="4" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-sm" placeholder="Nhập câu trả lời của nhóm..."></textarea>
-          </div>
-          <div class="space-y-2">
-            <label class="block font-bold text-blue-900">D. Ý nghĩa đối với bộ máy quản lý:</label>
-            <textarea id="ans-yNghia" rows="4" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-sm" placeholder="Nhập câu trả lời của nhóm..."></textarea>
-          </div>
+        <div><label class="block text-sm font-semibold text-slate-700 mb-2">Thành viên 4</label> <input type="text" id="member-4" placeholder="Nhập tên thành viên (tùy chọn)" class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2">
         </div>
-
-        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-6 border-t border-slate-200">
-          <button onclick="backToSetup()" class="w-full sm:w-1/3 bg-slate-500 hover:bg-slate-600 text-white font-bold py-4 px-4 rounded-lg shadow transition-all">
-            🔙 Quay Lại
-          </button>
-          <button id="btn-submit-student" onclick="submitTask()" class="w-full sm:w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-4 rounded-lg shadow-lg transition-all transform hover:-translate-y-0.5 flex justify-center items-center">
-            NỘP DỮ LIỆU THẢO LUẬN ✔
-          </button>
-        </div>
+       </div><button onclick="proceedToTask()" class="btn-primary w-full text-white font-bold py-3 rounded-lg"> Bắt Đầu <i data-lucide="play" style="display: inline; width: 18px; height: 18px; margin-left: 8px; vertical-align: middle;"></i> </button>
       </div>
-
-      <div id="student-review-step" class="hidden space-y-6 max-w-4xl mx-auto py-8 animate-fade-in">
-        <div class="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-8 text-center shadow-sm">
-          <div class="text-6xl mb-4">🎉</div>
-          <h2 class="text-3xl font-black text-emerald-800">Nộp bài thành công!</h2>
-          <p class="text-emerald-700 mt-2 font-medium">Dữ liệu thảo luận của nhóm đã được lưu trữ an toàn. Các em có thể xem lại bài làm bên dưới.</p>
-        </div>
-        
-        <div class="border border-slate-300 rounded-xl p-6 bg-white shadow-sm">
-          <div class="border-b border-slate-200 pb-4 mb-4">
-            <h3 class="text-xl font-bold text-slate-800">📋 PHIẾU HỌC TẬP ĐÃ NỘP</h3>
-            <p class="mt-2 text-slate-700"><strong>Nhóm:</strong> <span id="rev-group" class="text-blue-700 font-bold uppercase"></span></p>
-            <p class="mt-1 text-slate-700"><strong>Thành viên:</strong> <span id="rev-members" class="italic"></span></p>
-          </div>
-          
-          <div class="space-y-4 text-sm md:text-base">
-            <div>
-              <strong class="text-blue-900 block mb-1">A. Tên gọi cơ quan chuyên môn:</strong>
-              <div id="rev-tengoi" class="bg-slate-50 p-3 rounded border border-slate-200 whitespace-pre-line text-slate-800"></div>
-            </div>
-            <div>
-              <strong class="text-blue-900 block mb-1">B. Thành phần cấu tạo:</strong>
-              <div id="rev-thanhphan" class="bg-slate-50 p-3 rounded border border-slate-200 whitespace-pre-line text-slate-800"></div>
-            </div>
-            <div>
-              <strong class="text-blue-900 block mb-1">C. Nhiệm vụ và vai trò chính:</strong>
-              <div id="rev-nhiemvu" class="bg-slate-50 p-3 rounded border border-slate-200 whitespace-pre-line text-slate-800"></div>
-            </div>
-            <div>
-              <strong class="text-blue-900 block mb-1">D. Ý nghĩa đối với bộ máy quản lý:</strong>
-              <div id="rev-ynghia" class="bg-slate-50 p-3 rounded border border-slate-200 whitespace-pre-line text-slate-800"></div>
-            </div>
-          </div>
-        </div>
-
-        <button onclick="resetStudentForm()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg shadow transition-all">
-          Làm Mới Biểu Mẫu 🔄
-        </button>
+     </div>
+    </div><!-- Step 3: Task -->
+    <div id="step-task" class="p-6 hidden">
+     <div class="max-w-4xl mx-auto"><button onclick="backToMembers()" class="mb-6 text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800"> <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i> Quay lại </button>
+      <div class="bg-white rounded-lg p-8 card-shadow mb-6">
+       <h1 id="task-group-name" class="text-3xl font-bold text-blue-600 mb-2"></h1>
+       <p class="text-slate-600 mb-6">Thành viên: <span id="task-members" class="font-semibold text-slate-800"></span></p>
+       <div class="task-box p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-3">Nhiệm Vụ</h3>
+        <p class="text-slate-700 leading-relaxed">Dựa trên tư liệu đã cung cấp, hãy trình bày về cơ quan của nhóm theo các tiêu chí:</p>
+        <ul class="list-disc list-inside text-slate-700 mt-3 space-y-1">
+         <li><strong>Tên gọi cơ quan chuyên môn</strong></li>
+         <li><strong>Thành phần</strong> - cấu tạo của cơ quan</li>
+         <li><strong>Nhiệm vụ và vai trò</strong> - chức năng chính</li>
+         <li><strong>Ý nghĩa đối với bộ máy quản lý</strong></li>
+        </ul>
+       </div>
+       <div id="task-content" class="bg-slate-50 p-4 rounded-lg border border-slate-300 mb-6"><!-- Tư liệu sẽ được chèn ở đây -->
+       </div>
       </div>
-
+      <div class="bg-white rounded-lg p-8 card-shadow">
+       <h3 class="text-2xl font-bold text-slate-800 mb-6">Bài Làm Của Nhóm</h3>
+       <div class="space-y-6">
+        <div><label class="block text-sm font-bold text-slate-700 mb-2">1. Tên gọi cơ quan chuyên môn</label> <textarea id="answer-1" placeholder="Nhập câu trả lời..." class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2 h-20 resize-none"></textarea>
+        </div>
+        <div><label class="block text-sm font-bold text-slate-700 mb-2">2. Thành phần</label> <textarea id="answer-2" placeholder="Nhập câu trả lời..." class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2 h-24 resize-none"></textarea>
+        </div>
+        <div><label class="block text-sm font-bold text-slate-700 mb-2">3. Nhiệm vụ và vai trò</label> <textarea id="answer-3" placeholder="Nhập câu trả lời..." class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2 h-24 resize-none"></textarea>
+        </div>
+        <div><label class="block text-sm font-bold text-slate-700 mb-2">4. Ý nghĩa đối với bộ máy quản lý</label> <textarea id="answer-4" placeholder="Nhập câu trả lời..." class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2 h-24 resize-none"></textarea>
+        </div>
+       </div>
+       <div class="flex gap-4 mt-8"><button onclick="submitTask()" class="btn-primary flex-1 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"> <i data-lucide="send" style="width: 18px; height: 18px;"></i> Nộp Bài </button> <button onclick="viewMySubmission()" class="bg-slate-200 hover:bg-slate-300 flex-1 text-slate-800 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"> <i data-lucide="eye" style="width: 18px; height: 18px;"></i> Xem Lại Bài </button>
+       </div>
+      </div>
+      <div id="submission-message" class="mt-6 p-4 rounded-lg hidden"></div>
+     </div>
     </div>
-  </div>
-
-
-  <div id="tab-teacher" class="max-w-6xl mx-auto px-4 pb-12 hidden">
-    <div class="bg-white p-6 md:p-8 rounded-b-xl shadow-md border-x border-b border-slate-200">
-      
-      <div id="teacher-auth-box" class="max-w-md mx-auto py-16 text-center space-y-6">
-        <div class="text-6xl mb-2">🔐</div>
-        <h2 class="text-2xl font-black text-slate-800">Xác Thực Quản Trị</h2>
-        <p class="text-slate-600">Vui lòng nhập mật khẩu giáo viên để truy cập bảng điều khiển dữ liệu.</p>
-        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 justify-center">
-          <input type="password" id="teacher-password" placeholder="Nhập mật khẩu..." class="p-3 border border-slate-300 rounded-lg outline-none w-full sm:w-64 focus:ring-2 focus:ring-blue-500 text-center sm:text-left shadow-sm">
-          <button id="btn-login" onclick="loginTeacher()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg shadow transition-all flex justify-center items-center">
-            Mở Khóa
-          </button>
+   </div><!-- TEACHER TAB -->
+   <div id="teacher-view" class="hidden fade-in p-6">
+    <div class="max-w-6xl mx-auto"><!-- Login Section -->
+     <div id="teacher-login" class="bg-white rounded-lg p-8 card-shadow max-w-md mx-auto mb-8">
+      <h2 class="text-2xl font-bold text-slate-800 mb-6">Đăng Nhập Giáo Viên</h2>
+      <div class="mb-6"><label class="block text-sm font-semibold text-slate-700 mb-2">Mật khẩu</label> <input type="password" id="teacher-password" placeholder="Nhập mật khẩu" class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2">
+      </div><button onclick="teacherLogin()" class="btn-primary w-full text-white font-bold py-2 rounded-lg"> Đăng Nhập </button>
+      <div id="login-error" class="text-red-600 text-sm mt-3 hidden"></div>
+     </div><!-- Teacher Dashboard -->
+     <div id="teacher-dashboard" class="hidden">
+      <div class="flex justify-between items-center mb-8">
+       <h2 class="text-2xl font-bold text-slate-800">Bảng Điều Khiển Giáo Viên</h2><button onclick="teacherLogout()" class="text-slate-600 hover:text-slate-800 flex items-center gap-2"> <i data-lucide="log-out" style="width: 18px; height: 18px;"></i> Đăng Xuất </button>
+      </div><!-- Groups Display -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200" onclick="viewGroupSubmission('1', 'Nội Các')">
+        <div class="flex justify-between items-start mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 1: Nội Các</h3><i data-lucide="eye" style="width: 24px; height: 24px; color: #1e40af; cursor: pointer;"></i>
         </div>
-        <p id="auth-error-msg" class="text-sm text-red-600 font-medium hidden bg-red-50 p-2 rounded border border-red-200 inline-block"></p>
+        <div id="group-1-status" class="text-sm text-slate-600">
+         Chưa có bài nộp
+        </div>
+       </div>
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200" onclick="viewGroupSubmission('2', 'Cơ Mật Viện')">
+        <div class="flex justify-between items-start mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 2: Cơ Mật Viện</h3><i data-lucide="eye" style="width: 24px; height: 24px; color: #1e40af; cursor: pointer;"></i>
+        </div>
+        <div id="group-2-status" class="text-sm text-slate-600">
+         Chưa có bài nộp
+        </div>
+       </div>
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200" onclick="viewGroupSubmission('3', 'Lục Bộ')">
+        <div class="flex justify-between items-start mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 3: Lục Bộ</h3><i data-lucide="eye" style="width: 24px; height: 24px; color: #1e40af; cursor: pointer;"></i>
+        </div>
+        <div id="group-3-status" class="text-sm text-slate-600">
+         Chưa có bài nộp
+        </div>
+       </div>
+       <div class="group-card bg-white rounded-lg p-6 border-2 border-slate-200" onclick="viewGroupSubmission('4', 'Đô Sát Viện')">
+        <div class="flex justify-between items-start mb-3">
+         <h3 class="text-xl font-bold text-slate-800">Nhóm 4: Đô Sát Viện</h3><i data-lucide="eye" style="width: 24px; height: 24px; color: #1e40af; cursor: pointer;"></i>
+        </div>
+        <div id="group-4-status" class="text-sm text-slate-600">
+         Chưa có bài nộp
+        </div>
+       </div>
+      </div><!-- Clear Data Section -->
+      <div class="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+       <h3 class="text-lg font-bold text-red-700 mb-3">Xóa Dữ Liệu</h3>
+       <p class="text-red-600 text-sm mb-4">Xóa tất cả bài nộp của học sinh. Hành động này không thể hoàn tác.</p><button onclick="clearDataPrompt()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"> Xóa Tất Cả Dữ Liệu </button>
+       <div id="clear-data-confirm" class="mt-4 hidden bg-white p-4 rounded-lg border-2 border-red-400">
+        <p class="text-sm text-slate-700 mb-3">Nhập mật khẩu để xác nhận xóa dữ liệu:</p><input type="password" id="clear-password" placeholder="Nhập mật khẩu" class="input-field w-full border-2 border-slate-300 rounded-lg px-4 py-2 mb-3">
+        <div class="flex gap-3"><button onclick="confirmClearData()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex-1 transition-colors"> Xác Nhận Xóa </button> <button onclick="cancelClearData()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold py-2 px-4 rounded-lg flex-1 transition-colors"> Hủy </button>
+        </div>
+       </div>
       </div>
-
-      <div id="teacher-dashboard" class="hidden space-y-8 animate-fade-in">
-        
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-slate-200 pb-5 gap-4">
-          <div>
-            <h2 class="text-2xl font-black text-slate-900">📊 Quản Lý Hoạt Động Nhóm</h2>
-            <p class="text-slate-500 mt-1">Kiểm tra bài nộp của học sinh và đối chiếu đáp án chuẩn.</p>
-          </div>
-          <button onclick="refreshData()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow transition-all flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            Làm mới dữ liệu
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div class="border border-slate-200 p-5 rounded-xl shadow-sm bg-white hover:shadow-md transition-all flex flex-col justify-between group">
-            <div class="border-b border-slate-100 pb-3 mb-4">
-              <h3 class="font-black text-lg text-blue-800 uppercase">Nhóm 1</h3>
-              <p class="font-bold text-slate-600">Nội các</p>
-              <div class="mt-2 text-sm font-medium" id="status-group-1"><span class="text-slate-400 italic">Đang tải...</span></div>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="viewGroupSubmission('Nội các')" class="flex-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                👁 Xem Bài
-              </button>
-              <button onclick="viewTargetAnswer('Nội các')" class="flex-1 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-700 border border-amber-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                💡 Đáp Án
-              </button>
-            </div>
-          </div>
-
-          <div class="border border-slate-200 p-5 rounded-xl shadow-sm bg-white hover:shadow-md transition-all flex flex-col justify-between group">
-            <div class="border-b border-slate-100 pb-3 mb-4">
-              <h3 class="font-black text-lg text-emerald-800 uppercase">Nhóm 2</h3>
-              <p class="font-bold text-slate-600">Cơ mật viện</p>
-              <div class="mt-2 text-sm font-medium" id="status-group-2"><span class="text-slate-400 italic">Đang tải...</span></div>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="viewGroupSubmission('Cơ mật viện')" class="flex-1 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                👁 Xem Bài
-              </button>
-              <button onclick="viewTargetAnswer('Cơ mật viện')" class="flex-1 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-700 border border-amber-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                💡 Đáp Án
-              </button>
-            </div>
-          </div>
-
-          <div class="border border-slate-200 p-5 rounded-xl shadow-sm bg-white hover:shadow-md transition-all flex flex-col justify-between group">
-            <div class="border-b border-slate-100 pb-3 mb-4">
-              <h3 class="font-black text-lg text-purple-800 uppercase">Nhóm 3</h3>
-              <p class="font-bold text-slate-600">Lục bộ</p>
-              <div class="mt-2 text-sm font-medium" id="status-group-3"><span class="text-slate-400 italic">Đang tải...</span></div>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="viewGroupSubmission('Lục bộ')" class="flex-1 bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-700 border border-purple-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                👁 Xem Bài
-              </button>
-              <button onclick="viewTargetAnswer('Lục bộ')" class="flex-1 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-700 border border-amber-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                💡 Đáp Án
-              </button>
-            </div>
-          </div>
-
-          <div class="border border-slate-200 p-5 rounded-xl shadow-sm bg-white hover:shadow-md transition-all flex flex-col justify-between group">
-            <div class="border-b border-slate-100 pb-3 mb-4">
-              <h3 class="font-black text-lg text-rose-800 uppercase">Nhóm 4</h3>
-              <p class="font-bold text-slate-600">Đô sát viện</p>
-              <div class="mt-2 text-sm font-medium" id="status-group-4"><span class="text-slate-400 italic">Đang tải...</span></div>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="viewGroupSubmission('Đô sát viện')" class="flex-1 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 border border-rose-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                👁 Xem Bài
-              </button>
-              <button onclick="viewTargetAnswer('Đô sát viện')" class="flex-1 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-700 border border-amber-200 py-2 rounded-lg text-sm font-bold transition-all flex justify-center items-center">
-                💡 Đáp Án
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div id="teacher-viewer-section" class="hidden bg-white border-2 border-slate-300 rounded-xl p-6 shadow-lg mt-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 pb-4 mb-5 gap-2">
-            <h4 id="viewer-title" class="text-2xl font-black text-slate-800 uppercase">Khung Hiển Thị Chi Tiết</h4>
-            <span id="viewer-timestamp" class="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200"></span>
-          </div>
-          
-          <div id="viewer-content-members" class="mb-6 text-base bg-blue-50 p-4 rounded-lg border border-blue-100"></div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <h5 class="font-bold text-blue-800 mb-2 border-b border-blue-100 pb-2">A. Tên gọi cơ quan chuyên môn:</h5>
-              <p id="view-section-a" class="text-base text-slate-800 leading-relaxed whitespace-pre-line"></p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <h5 class="font-bold text-blue-800 mb-2 border-b border-blue-100 pb-2">B. Thành phần cấu tạo:</h5>
-              <p id="view-section-b" class="text-base text-slate-800 leading-relaxed whitespace-pre-line"></p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <h5 class="font-bold text-blue-800 mb-2 border-b border-blue-100 pb-2">C. Nhiệm vụ và vai trò chính:</h5>
-              <p id="view-section-c" class="text-base text-slate-800 leading-relaxed whitespace-pre-line"></p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <h5 class="font-bold text-blue-800 mb-2 border-b border-blue-100 pb-2">D. Ý nghĩa đối với bộ máy quản lý:</h5>
-              <p id="view-section-d" class="text-base text-slate-800 leading-relaxed whitespace-pre-line"></p>
-            </div>
-          </div>
-          
-          <div class="mt-6 text-right">
-            <button onclick="closeViewer()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-6 rounded-lg transition-all">
-              Đóng khung này
-            </button>
-          </div>
-        </div>
-
-        <div class="pt-8 border-t border-slate-200 flex justify-end">
-          <button onclick="triggerResetData()" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white font-bold py-3 px-6 rounded-lg shadow-sm transition-all flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            Xóa Toàn Bộ Dữ Liệu Lớp (Reset)
-          </button>
-        </div>
-
+     </div><!-- Group Submission View -->
+     <div id="submission-view" class="hidden"><button onclick="backToDashboard()" class="mb-6 text-blue-600 font-semibold flex items-center gap-2 hover:text-blue-800"> <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i> Quay lại </button>
+      <div class="bg-white rounded-lg p-8 card-shadow mb-6">
+       <h2 id="submission-group-title" class="text-2xl font-bold text-slate-800 mb-6"></h2>
+       <div id="submissions-list" class="space-y-6"><!-- Submissions sẽ được chèn ở đây -->
+       </div>
+       <div id="no-submission" class="text-center py-12 text-slate-600"><i data-lucide="inbox" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.5;"></i>
+        <p>Chưa có bài nộp từ nhóm này</p>
+       </div>
+      </div><button onclick="showAnswerKey()" class="btn-primary w-full text-white font-bold py-3 rounded-lg mb-4"> <i data-lucide="book" style="display: inline; width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"></i> Hiển Thị Đáp Án Chuẩn </button>
+      <div id="answer-key" class="hidden bg-amber-50 border-2 border-amber-400 rounded-lg p-6">
+       <h3 class="text-lg font-bold text-amber-900 mb-4">Đáp Án Chuẩn</h3>
+       <div id="answer-key-content" class="space-y-4 text-amber-900"></div>
       </div>
+     </div>
     </div>
+   </div>
   </div>
-
-  <style>
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-  </style>
-
   <script>
-    const globalSource = "\n\nNguồn: T. T. Yến, V. D. Mến, N. Đ. Nhuệ, N. H. Tâm, và P. Á. Phương. Lịch sử Việt Nam tập 05 - Từ năm 1802 đến năm 1858. Hà Nội: NXB Khoa học xã hội, 2017.";
+    // ===== CONFIG & DATA =====
+    const TEACHER_PASSWORD = "giaovien";
+    let isTeacherLoggedIn = false;
+    let currentGroupId = null;
+    let currentGroupName = null;
+    let allSubmissions = [];
 
-    // 1. KHO DỮ LIỆU TƯ LIỆU GỐC (ĐÃ XÓA SẠCH CHÚ THÍCH TRANG PDF VÀ THÊM NGUỒN)
-    const materials = {
-      "Nội các": `Năm 1820, Minh Mệnh cho đổi Thị thư viện thành Văn thư phòng, lấy 3 sờ Thị thư, Thị hàn, Nội hàn tham dự vào. Vì là nơi "khu mật của nhà nước" nên quan chức được bổ nhiệm vào các cơ quan này đều là những người tài cán, danh vọng, như Thiêm sự Lễ bộ là Nguyễn Đăng Tuân, Tri bạ Nội hàn là Trần Công Tuân, Cai hợp Hứa Đức Đệ, Lê Bá Tú, Hoàng Quýnh và Nguyễn Văn Thuận sung các chức Thị thư, Thị hàn, coi giữ đồ thượng bảo và văn thư, chương tấu, đồ bàn, sổ sách; Hàn lâm Thị giảng Nguyễn Cừu Khánh và cống sĩ viện Nguyễn Trường Huy sung chức Khởi cư chú. Những viên này đều do bộ cấp bằng để làm việc ở Văn thư phòng. Đồng thời, Minh Mệnh sai chế ấn quan phòng bàng đồng của Văn thư phòng giao cho các Thị thư, Thị hàn, Nội hàn cùng giữ. 
-      Năm 1821, Minh Mệnh lại cho đặt một viên Thượng bảo khanh và một viên Thượng bảo Thiếu khanh để quản lý công việc của Văn thư phòng; số người làm việc ở Văn thư phòng được chuẩn định là 40 người, chia thành 4 tào chuyên giữ các việc như ấn chương, sổ sách, giấy tờ việc quan và Khởi cư chú. 
-      Năm 1829, Minh Mệnh cho đổi Văn thư phòng thành Nội các. Trong bài dụ thành lập Nội các, vua Minh Mệnh đã khẳng định: "Nhà nước ta sau khi đại định, đức Hoàng khảo Thể tổ Cao Hoàng để ta đặt ra Thị thư viện. Khi trẫm mới thân chính đổi là Văn thư phòng, danh sắc dẫu khác, cũng đều là để giữ sổ sách và theo hầu hai bên. Nay nghĩ Văn thư phòng tên gọi chưa thỏa nên đổi làm Nội các". 
-      Nội các do 4 viên đại thần quản lĩnh, bao gồm 2 viên chánh Tam phẩm (lấy Thị lang các bộ hoặc Chưởng viện Học sĩ Viện Hàn lâm sung vào), trong đó, 1 viên kiêm lĩnh Thượng bảo Tự khanh; 2 viên chánh Tứ phẩm (lấy Thị độc Học sĩ Viện Hàn lâm sung vào), trong đó, 1 viên kiêm lĩnh Thượng bảo Thiếu khanh; thuộc viên 28 người, phẩm trật từ hàm chánh Ngũ phẩm xuống tới tòng Cửu phẩm. Từ năm 1830 trờ đi, do công việc nhiều, nên số thuộc viên tăng lên 30 người; đến năm 1840, số thuộc viên trong ngạch vĩnh viễn là 34 người. 
-      Nội các chia thành 4 tào: Thượng bảo, Ký chú, Đồ thư và Biểu bạ. Thượng bảo giữ ấn quốc bảo, ngọc tỳ và ấn triện; Ký chú giữ việc phiếu, nghĩ, dụ, chỉ; Đồ thư thì vâng mệnh giữ văn thơ, sách vở; Biểu bạ giữ việc kiểm soát và đóng thành biểu chương, sổ sách để lưu giữ. Năm 1836, đổi tào Ký chú làm tào Thừa vụ, đến năm 1844 lại cho đổi tào Thừa vụ làm sở Ty luân. Năm 1838, đổi tào Đồ thư làm tào Bí thư; năm 1844, đổi tào Bí thư làm sở Đồ thư và đến năm 1845, lại cho đổi sở Đồ thư thành sở Bí thư. 
-      Năm 1844 cho đổi tào Biểu bạ thành sở Bản chương. Sở Bản chương lại chia thành 3 chương: Chương Lại, Hộ có chức trách coi giữ các sớ sách liên quan đến 2 bộ Lại, Hộ và của Cơ mật viện, Thị vệ xứ, Viện Đô sát, Thông chính sứ ty, kho thuốc súng cùng các doanh; Chương Lễ, Binh coi giữ sớ sách cùa Bộ Lễ, Binh và Tôn nhân phủ, Phủ Nội vụ, Viện Hàn lâm, Ty Thương trường, Khâm thiên giám, Quốc tử giám, Ty Điển nghi, Thái thường tự, Quang lộc tự, Ty Tào chính, các phủ đệ, phủ Thừa Thiên, phái viên đi xuất dương; Chương Hình, Công trông coi sớ sách của bộ Hình, Công và Đại lý tự, Tam pháp ty, Ty Vũ khố, Ty Chế tạo, Ty Tiết thận, Ty Doanh thiện, kho gỗ. Như thế, Nội các không những là cơ quan văn phòng của nhà vua mà còn là nơi lưu giữ một khối lượng rất lớn văn thư và tư liệu của triều Nguyễn. 
-      Minh Mệnh đặt ra Nội các với mong muốn xây dựng một chính quyền nhà nước Trung ương tập quyền chuyên chế vững mạnh. Tuy chỉ là cơ quan văn phòng của triều đình, nhưng Nội các có chức nhiệm giám sát và khống chế quyền lực của 6 bộ và các cơ quan ngang bộ, tạo điều kiện thuận lợi cho nhà vua quản lý đất nước một cách sâu sát hơn. Việc thành lập cơ quan Nội các và Cơ mật viện là một bước tiến quan trọng trong tổ chức bộ máy quản lý nhà nước tại triều đình Trung ương của nhà Nguyễn nói riêng và nhà nuớc phong kiến quân chủ Việt Nam nói chung. Như vậy, Ngũ quân Đô thống phủ và Lục bộ, Nội các và Cơ mật viện đã trở thành những cơ quan đầu não của bộ máy nhà nước triều Nguyễn, điều đó được thể hiện qua lời dụ bảo của Minh Mệnh: "Bên trong thì Nội các ở bên tả, Viện Cơ mật ở bên hữu, ngoài thì võ có Ngũ quân Đô thống phủ, văn có đường quan Lục bộ: tả hữu có người, trong ngoài giúp nhau. Phàm những việc Lục bộ làm chưa đúng thì Nội các hạch ra, những việc Nội các làm chưa hợp lẽ thì Cơ mật viện hạch ra, khiến cho ràng rịt lẫn nhau mới mong đến được thịnh trị".` + globalSource,
-      
-      "Cơ mật viện": `Để giải quyết các việc quân quốc trọng sự, trên cơ sở của Tứ trụ đại thần (Cần chính điện Đại học sĩ, Văn minh điện Đại học sĩ, Võ hiển điện Đại học sĩ và Đông các Đại học sĩ), đồng thời, tham khảo cách thức tổ chức của nhà Thanh, năm 1834, Minh Mệnh cho thành lập Cơ mật viện. 
-      Lời dụ về việc thành lập Cơ mật viện nói rõ: Nhà nước chia ra các chức đặt ra quan, then chốt đã đầy đủ bộ, viện, nội các đều đã rõ ràng chức sự, rành mạch việc làm, còn như việc quân việc nước lớn lao ta đã trực diện chi bảo cho các bộ và nội các vâng chỉ suy nghĩ mà làm, từ trước đến nay cũng đều được ổn thỏa. Lại nghĩ điều then chốt của việc nước rất là quan trọng, tất phải theo như Khu mật nhà Tống, Xứ quân cơ nhà Thanh tùy nghi châm chước, để cho riêng ra một sở, việc có chuyên trách, thì giường mối chi tiết càng thêm chu đáo. Nay cho đặt làm Viện Cơ mật phụng mệnh xem xét thi hành, để tỏ rõ sự thận trọng. 
-      Như vậy, Cơ mật viện là hội đồng tư vấn tối cao cho Hoàng đế, có nhiệm vụ hoạch định chiến lược quân cơ, nội an, bang giao và cả phát triển kinh tế, văn hóa, dân sinh...; đồng thời cũng là cơ quan giám sát mọi công việc triều chính, bảo quản các tài liệu tối mật, quốc bảo, quân cấp... 
-      Đứng đầu Cơ mật viện là 4 viên đại thần (hoặc có thể là 2 - 3 viên), dùng quan văn võ từ Tam phẩm trở lên; thuộc viên 8 người có phẩm hàm từ Ngũ phẩm, đến Thất phẩm (2 Viên ngoại lang, 2 Chủ sự; 4 Tư vụ hoặc Biên tu, Kiểm thảo), được tuyển chọn cẩn thận từ 6 bộ và các tự, viện. 
-      Năm 1836, Cơ mật viện được chia làm 2 ban: Nam chương kinh phụ trách những việc quan hệ từ Quảng Bình trờ vào Nam đến các tinh Nam Kỳ, các nước ngoài và phía Nam; còn Bắc chương kinh chuyên lo những việc quan hệ từ Hà Tĩnh trờ về Bắc đến các tỉnh Bắc Kỳ, các nước ngoài và phía Bắc. Đen năm 1837, Minh Mệnh cho đổi Nam chương kinh thành Nam ty, Bắc chương kinh thành Bắc ty. 
-      Việc thành lập cơ quan Nội các và Cơ mật viện là một bước tiến quan trọng trong tổ chức bộ máy quản lý nhà nước tại triều đình Trung ương của nhà Nguyễn nói riêng và nhà nước phong kiến quân chủ Việt Nam nói chung. Như vậy, Ngũ quân Đô thống phủ và Lục bộ, Nội các và Cơ mật viện đã trở thành những cơ quan đầu não của bộ máy nhà nước triều Nguyễn, điều đó được thể hiện qua lời dụ bảo của Minh Mệnh: "Bên trong thì Nội các ở bên tả, Viện Cơ mật ở bên hữu, ngoài thì võ có Ngũ quân Đô thống phủ, văn có đường quan Lục bộ: tả hữu có người, trong ngoài giúp nhau. Phàm những việc Lục bộ làm chưa đúng thì Nội các hạch ra, những việc Nội các làm chưa hợp lẽ thì Cơ mật viện hạch ra, khiến cho ràng rịt lẫn nhau mới mong đến được thịnh trị".` + globalSource,
-      
-      "Lục bộ": `Dưới thời Gia Long, nhà Nguyễn vẫn duy trì hệ thống các cơ quan trung ương: đứng đầu là vua - người nắm quyền hành cao nhất. Bên dưới là 6 bộ (Lại, Hộ, Lễ, Binh, Hình, Công), chịu trách nhiệm chỉ đạo các công việc chung của nhà nước và cùng với Ngũ quân Đô thống phủ phụ trách quân đội. Tuy tổ chức đủ 6 bộ nhưng phải đến năm Giáp Tý (1804), Gia Long mới cho đúc ấn của 6 bộ và đến năm Kỷ Tỵ (1809) mới đặt đủ chức quan của 6 bộ. Đứng đầu mỗi bộ là một viên Thượng thư, dưới chức Thượng thư có các chức Tả - Hữu Tham tri giúp việc. Tiếp đó là các chức Thiêm sự, Câu kê, Cai hợp, Thủ hợp... và nhân viên ở Lệnh sử ty, Bản ty. 
-      Đối với Lục bộ, Minh Mệnh cũng tiến hành cải tổ lại bộ máy quan lại cho phù hợp với chức năng đồng thời nâng cao hiệu quả hoạt động. Chức Thượng thư (trật chánh Nhị phẩm) và Tả - Hữu Tham tri (tòng Nhị phẩm) vẫn được giữ nguyên, nhưng để giúp việc cho Tham tri, tháng 8 năm Bính Tuất (1826), Minh Mệnh lại cho đặt chức Tả - Hữu Thị lang (trật chánh Tam phẩm). Năm 1827, lại đổi Thiêm sự các nha của Lục bộ làm Lang trung (chánh Tứ phẩm), đổi Lang trung làm Viên ngoại lang (chánh Ngũ phẩm); đổi Câu kê làm Tả - Hữu Kinh lịch, Cai hợp làm chánh Bát phẩm thư lại, Thủ hợp làm chánh Cửu phẩm thư lại. Ngoài ra, ở mỗi bộ cho đặt thêm chức Chủ sự (chánh Lục phẩm), Tư vụ (chánh Thất phẩm) và Hành tẩu. 
-      Để giải quyết kịp thời những công văn giấy tờ, mỗi bộ có một văn phòng riêng. Năm 1837, Minh Mệnh cho đổi Bản ty thành Ấn tào là nơi tiếp nhận và chuyển đệ công văn, giấy tờ của các nha trong mỗi bộ. Dưới thời Thiệu Trị, năm 1844, Ấn tào đổi thành Ấn ty và sau trở thành Ấn ty của mỗi bộ (như Ty Lại ấn của bộ Lại, Ty Hộ ấn của bộ Hộ...). 
-      Tương tự, năm 1821, Minh Mệnh cho đổi Lệnh sử ty ở Lục bộ làm Thanh lại ty. Nhằm theo dõi và kiểm soát kịp thời tình hình các địa phương, nhà Nguyễn đã phân Ty Thanh lại theo các khu vực, như ở Kinh đô và phủ Thừa Thiên, theo các trực (Nam trực và Bắc trực), theo các cơ (Tả cơ và Hữu cơ), theo các kỳ (Bắc Kỳ và Nam Kỳ). Trong đó, mỗi bộ thường có từ 3 đến 5 Ty Thanh lại: bộ Lại có 3 ty: Văn tuyển, Trừng tự, Phong điển; bộ Hộ có 5 ty: Kinh trực, Nam kỳ, Bắc kỳ, Thưởng lộc, Thuế hạng; bộ Lễ có 4 ty: Nghi văn, Nhân tự, Tân hưng, Thù ứng; Bộ Binh có 4 ty: Kinh kỳ, Trực tỉnh, Vũ tuyển, Khảo công; bộ Hình có 4 ty: Kinh đô và phủ Thừa Thiên, Trực kỳ, Nam hiến, Bắc hiến; bộ Công có 3 ty: Quy chế, Doanh thiện, Tu tạo. 
-      Lục bộ hoạt động theo nguyên tắc Lục bộ tương thông. Trên danh nghĩa là nắm mọi quyền về hành pháp, nhưng thực chất Lục bộ dưới đời vua Minh Mệnh đã bị giới hạn rất nhiều về quyền lực, chỉ là cơ quan chấp hành, kiến nghị hoặc tư vấn, quyền hành tối cao vẫn thuộc về Hoàng đế. Như vậy, Ngũ quân Đô thống phủ và Lục bộ, Nội các và Cơ mật viện đã trở thành những cơ quan đầu não của bộ máy nhà nước triều Nguyễn, điều đó được thể hiện qua lời dụ bảo của Minh Mệnh: "Bên trong thì Nội các ở bên tả, Viện Cơ mật ở bên hữu, ngoài thì võ có Ngũ quân Đô thống phủ, văn có đường quan Lục bộ: tả hữu có người, trong ngoài giúp nhau. Phàm những việc Lục bộ làm chưa đúng thì Nội các hạch ra, những việc Nội các làm chưa hợp lẽ thì Cơ mật viện hạch ra, khiến cho ràng rịt lẫn nhau mới mong đến được thịnh trị".` + globalSource,
-      
-      "Đô sát viện": `Ngoài ra, bộ máy chính quyền ở Trung ương còn có các cơ quan chuyên trách như: Ngự sử đài và hai tự (Thái thường tự và Thái bộc tự) giữ việc thanh tra, đàn hặc và giám sát... Bằng cách đặt ra một số cơ quan, tổ chức mới như Nội các, Cơ mật viện; bổ sung thêm chức Tham tri và Chủ sự ở các bộ; thay đổi Ngự sử đài (thời Lê) thành Đô sát viện, thay các chức Câu kê, Cai hợp bằng Thư lại; bãi bỏ Bắc thành và Gia Định thành, thiết lập đơn vị hành chính tỉnh với các chức Tổng đốc, Tuần phủ, Bố chính, Án sát... 
-      Đối với Ngự sử đài, Minh Mệnh cũng tham khảo điển lễ nhà Thanh mà cho đổi ty Đài hiến (Ngự sử đài) thời trước thành Đô sát viện vào năm 1832. Trong Đô sát viện, Minh Mệnh cho đặt chức Tả - Hữu Đô ngự sử (ngang với Thượng thư Lục bộ), Tả - Hữu Phó Đô ngự sử (ngang với Tham tri Lục bộ). Thuộc viên có Lục khoa Cấp sự trung và 16 đạo Giám sát ngự sử, trật đều chánh Ngũ phẩm; Lục sự một người (trật chánh Thất phẩm); Thư lại chánh Bát, Cửu phẩm đều 4 người, Thư lại Vị nhập lưu 20 người. 
-      Hệ thống giám sát của Viện Đô sát, bao gồm: ở Kinh đô là cấp sự trung Lục khoa và Giám sát Ngự sử 16 đạo có quyền giám sát và đàn hặc lẫn nhau. Lại khoa kiểm soát Lại bộ, Hàn lâm viện và Thái y viện; Hộ khoa kiểm soát Hộ bộ, Phủ Nội vụ, Ty Tào chính, Ty Thương trường và Nội tàng; Lễ khoa kiểm soát Lễ bộ, Thái thường tự, Quang lộc tự, Hồng lô tự, Quốc tử giám và Khâm thiên giám; Binh khoa kiểm soát Binh bộ, Thái bộc tự, Kinh thành đề đốc và 2 kho súng ống thuốc đạn; Hình khoa kiểm soát Hình bộ, Đại lý tự; Công khoa kiểm soát Công bộ, Ty Vũ khố và Ty Mộc thương. 
-      Trong khi đó, Giám sát ngự sử đạo Kinh kỳ kiểm xét Nội các và phủ Thừa Thiên; Giám sát Ngự sử các đạo Nam - Ngãi (Quảng Nam, Quảng Ngãi), Bình - Phú (Bình Định, Phú Yên). Thuận - Khánh (Bình Thuận, Khánh Hòa), Định - Biên (Gia Định, Biên Hòa), Long - Tường (Vĩnh Long, Định Tường), An - Hà (An Giang, Hà Tiên), Bình - Trị (Quảng Bình, Quảng Trị), An - Tĩnh (Nghệ An, Hà Tĩnh), Thanh Hoa, Hà - Ninh (Hà Nội, Ninh Bình) Định - Yên (Nam Định, Hưng Yên), Hải - Yên (Hải Dương, Quảng Yên), Ninh - Thái (Bắc Ninh, Thái Nguyên), Lạng - Bằng (Lạng Sơn, Cao Bằng) và Sơn - Hưng - Tuyên (Sơn Tây, Hưng Hóa và Tuyên Quang) đều phải kiểm xét địa phương đạo mình, nếu quan lại có vạch ra những tệ tham ô, chậm trễ, trái phép, thì tuỳ việc mà tham hặc. Nếu quan viên văn võ ở Kinh thấy ai không công bằng, không giữ pháp đều được phép hặc tâu. Khoa và đạo cũng cho phép được hặc tâu lẫn nhau. 
-      Hơn nữa, để khách quan và đảm bảo tính hiệu quả cao trong công việc giám sát, Minh Mệnh ra quy chế: các đạo Nam - Ngãi, Ninh - Thái thì hội đồng với Lại khoa; các đạo Long - Tường, Định - Yên, Lạng - Bằng thì hội đồng với Hộ khoa; các đạo An - Biên, Hải - Yên thì hội đồng với Lễ khoa; các đạo An - Hà, Thanh Hoa, Sơn - Hưng - Tuyên thì hội đồng với Binh khoa; các đạo Bình - Phú, An - Tĩnh thì hội đồng với Hình khoa; các đạo Thuận - Khánh, Bình - Trị, Hà - Ninh thì hội đồng với Công khoa. Các đạo nói trên đều chiếu theo Lục khoa mà chuyên làm việc kiểm soát các nha môn Ngự sử ở các đạo cùng với cấp sự trung (ở Lục khoa) xem xét mà làm. Để tăng cường sự liên kết giữa bộ Hình, Đại lý tự với Đô sát viện trong việc giải quyết hình án, năm 1832, Minh Mệnh đã "phỏng theo điển lệ Bắc triều [triều Thanh], lấy 3 nha của Hình bộ, Đô sát viện và Đại lý tự, gọi riêng là Tam pháp ty". 
-      Như vậy, Ngũ quân Đô thống phủ và Lục bộ, Nội các và Cơ mật viện đã trở thành những cơ quan đầu não của bộ máy nhà nước triều Nguyễn, điều đó được thể hiện qua lời dụ bảo của Minh Mệnh: "Bên trong thì Nội các ở bên tả, Viện Cơ mật ở bên hữu, ngoài thì võ có Ngũ quân Đô thống phủ, văn có đường quan Lục bộ: tả hữu có người, trong ngoài giúp nhau. Phàm những việc Lục bộ làm chưa đúng thì Nội các hạch ra, những việc Nội các làm chưa hợp lẽ thì Cơ mật viện hạch ra, khiến cho ràng rịt lẫn nhau mới mong đến được thịnh trị".` + globalSource
+    const groupsData = {
+      '1': {
+        name: 'Nội Các',
+        taskContent: `
+          <h4 class="font-bold text-slate-800 mb-3">Tư liệu cho học sinh đọc:</h4>
+          <div class="text-slate-700 text-sm space-y-2 max-h-96 overflow-y-auto">
+            <p><strong>Năm 1820:</strong> Minh Mệnh cho đổi Thị thư viện thành Văn thư phòng, lấy 3 sờ Thị thư, Thị hàn, Nội hàn tham dự vào. Vì là nơi "khu mật của nhà nước" nên quan chức được bổ nhiệm vào các cơ quan này đều là những người tài cán, danh vọng.</p>
+            <p><strong>Năm 1821:</strong> Minh Mệnh lại cho đặt một viên Thượng bảo khanh và một viên Thượng bảo Thiếu khanh để quản lý công việc của Văn thư phòng; số người làm việc ở Văn thư phòng được chuẩn định là 40 người, chia thành 4 tào.</p>
+            <p><strong>Năm 1829:</strong> Minh Mệnh cho đổi Văn thư phòng thành Nội các. Nội các do 4 viên đại thần quản lĩnh, bao gồm 2 viên chánh Tam phẩm và 2 viên chánh Tứ phẩm; thuộc viên 28 người.</p>
+            <p><strong>Cấu trúc:</strong> Nội các chia thành 4 tào: Thượng bảo (giữ ấn quốc bảo), Ký chú (giữ việc phiếu, nghĩ, dụ, chi), Đồ thư (giữ văn thơ, sách vở), Biểu bạ (giữ việc kiểm soát).</p>
+            <p><strong>Ý nghĩa:</strong> Nội các không những là cơ quan văn phòng của nhà vua mà còn là nơi lưu giữ một khối lượng rất lớn văn thư và tư liệu. Nội các có chức nhiệm giám sát và khống chế quyền lực của 6 bộ.</p>
+          </div>
+        `
+      },
+      '2': {
+        name: 'Cơ Mật Viện',
+        taskContent: `
+          <h4 class="font-bold text-slate-800 mb-3">Tư liệu cho học sinh đọc:</h4>
+          <div class="text-slate-700 text-sm space-y-2 max-h-96 overflow-y-auto">
+            <p><strong>Năm 1834:</strong> Để giải quyết các việc quân quốc trọng sự, trên cơ sở của Tứ trụ đại thần, đồng thời tham khảo cách thức tổ chức của nhà Thanh, Minh Mệnh cho thành lập Cơ mật viện.</p>
+            <p><strong>Lời dụ:</strong> Cơ mật viện được thành lập để theo Khu mật nhà Tống, Xứ quân cơ nhà Thanh. Đây là một sở riêng biệt để việc có chuyên trách, giường mối chi tiết càng thêm chu đáo.</p>
+            <p><strong>Chức năng:</strong> Cơ mật viện là hội đồng tư vấn tối cao cho Hoàng đế, có nhiệm vụ hoạch định chiến lược quân cơ, nội an, bang giao, phát triển kinh tế, văn hóa, dân sinh; đồng thời cũng là cơ quan giám sát.</p>
+            <p><strong>Cấu trúc:</strong> Đứng đầu là 4 viên đại thần (hoặc 2-3 viên), dùng quan văn võ từ Tam phẩm trở lên; thuộc viên 8 người từ Ngũ phẩm đến Thất phẩm.</p>
+            <p><strong>Năm 1836:</strong> Cơ mật viện được chia làm 2 ban: Nam chương kinh (sau đổi thành Nam ty) và Bắc chương kinh (sau đổi thành Bắc ty).</p>
+          </div>
+        `
+      },
+      '3': {
+        name: 'Lục Bộ',
+        taskContent: `
+          <h4 class="font-bold text-slate-800 mb-3">Tư liệu cho học sinh đọc:</h4>
+          <div class="text-slate-700 text-sm space-y-2 max-h-96 overflow-y-auto">
+            <p><strong>Hệ thống 6 bộ:</strong> Lục bộ bao gồm: Lại bộ, Hộ bộ, Lễ bộ, Binh bộ, Hình bộ, Công bộ. Đây là sáu bộ phận hành chính chủ chốt, chịu trách nhiệm quản lý các lĩnh vực chuyên biệt.</p>
+            <p><strong>Dưới thời Gia Long:</strong> Đứng đầu mỗi bộ là một viên Thượng thư, dưới chức Thượng thư có Tả - Hữu Tham tri giúp việc. Tiếp đó là Thiêm sự, Câu kê, Cai hợp, Thủ hợp.</p>
+            <p><strong>Cải tổ dưới Minh Mệnh:</strong> Chức Thượng thư (chánh Nhị phẩm) và Tả - Hữu Tham tri (tòng Nhị phẩm) được giữ nguyên, nhưng tháng 8 năm Bính Tuất (1826), Minh Mệnh lại cho đặt chức Tả - Hữu Thị lang (ưật chánh Tam phẩm).</p>
+            <p><strong>Năm 1827:</strong> Đổi Thiêm sự làm Lang trung, đổi Lang trung làm Viên ngoại lang, đổi Câu kê làm Tả - Hữu Kinh lịch. Mỗi bộ có văn phòng riêng (Ấn ty).</p>
+            <p><strong>Nguyên tắc hoạt động:</strong> Lục bộ hoạt động theo nguyên tắc "Lục bộ tương thông". Tuy danh nghĩa là nắm mọi quyền về hành pháp, nhưng quyền hành tối cao vẫn thuộc về Hoàng đế.</p>
+          </div>
+        `
+      },
+      '4': {
+        name: 'Đô Sát Viện',
+        taskContent: `
+          <h4 class="font-bold text-slate-800 mb-3">Tư liệu cho học sinh đọc:</h4>
+          <div class="text-slate-700 text-sm space-y-2 max-h-96 overflow-y-auto">
+            <p><strong>Năm 1832:</strong> Minh Mệnh cho đổi Ngự sử đài (Đài hiến thời trước) thành Đô sát viện, tham khảo điển lễ nhà Thanh.</p>
+            <p><strong>Cấu trúc lãnh đạo:</strong> Trong Đô sát viện, Minh Mệnh cho đặt chức Tả - Hữu Đô ngự sử (ngang Thượng thư Lục bộ), Tả - Hữu Phó Đô ngự sử (ngang Tham tri Lục bộ).</p>
+            <p><strong>Thuộc viên:</strong> Có Lục khoa Cấp sự trung và 16 đạo Giám sát ngự sử (trật chánh Ngũ phẩm). Hệ thống giám sát gồm: ở Kinh đô là Lục khoa và Giám sát 16 đạo có quyền giám sát lẫn nhau.</p>
+            <p><strong>Chức năng giám sát:</strong> Lại khoa kiểm soát Lại bộ; Hộ khoa kiểm soát Hộ bộ; Lễ khoa kiểm soát Lễ bộ; Binh khoa kiểm soát Binh bộ; Hình khoa kiểm soát Hình bộ; Công khoa kiểm soát Công bộ.</p>
+            <p><strong>Giám sát địa phương:</strong> Giám sát ngự sử 16 đạo phụ trách các vùng địa phương, nếu quan lại có tham ô, chậm trễ, trái phép thì được phép hạch tâu.</p>
+            <p><strong>Năm 1832:</strong> Thành lập Tam pháp ty gồm Hình bộ, Đô sát viện và Đại lý tự để giải quyết hình án.</p>
+          </div>
+        `
+      }
     };
 
-    // 2. KHO ĐÁP ÁN CHUẨN ĐƯỢC NHẤN MẠNH TỪ KHÓA (KEYWORDS)
-    const answers = {
-      "Nội các": {
-        tenGoi: "Cơ quan <span class='keyword'>Nội các</span>. Ban đầu đổi từ Thị thư viện thành <span class='keyword'>Văn thư phòng (1820)</span>, sau đó chính thức đổi tên thành Nội các vào <span class='keyword'>năm 1829 dưới thời vua Minh Mệnh</span>.",
-        thanhPhan: "Do <span class='keyword'>bốn viên đại thần</span> quản lĩnh (2 viên chánh Tam phẩm, 2 viên chánh Tứ phẩm), lấy từ Thị lang các bộ hoặc Viện Hàn lâm, kiêm lĩnh Thượng bảo Tự khanh và Thiếu khanh. Số thuộc viên ban đầu là 28 người, đến năm 1840 ngạch vĩnh viễn là <span class='keyword'>34 người</span> (từ chánh Ngũ phẩm đến tòng Cửu phẩm). Chia thành <span class='keyword'>bốn tào</span>: Thượng bảo, Ký chú (sau đổi thành Thừa vụ, Ty luân), Đồ thư (sau đổi thành Bí thư) và Biểu bạ (sau đổi thành Bản chương, gồm 3 chương Lại-Hộ, Lễ-Binh, Hình-Công).",
-        nhiemVu: "Là nơi <span class='keyword'>\"khu mật của nhà nước\"</span>, cơ quan văn phòng của nhà vua. Có nhiệm vụ giữ sổ sách, coi giữ đồ thượng bảo, văn thư, chương tấu, đồ bàn, phiếu nghĩ, dụ chỉ. Đồng thời có chức năng <span class='keyword'>giám sát và khống chế quyền lực của 6 bộ</span> và các cơ quan ngang bộ.",
-        yNghia: "Thể hiện mong muốn xây dựng một chính quyền trung ương tập quyền <span class='keyword'>chuyên chế vững mạnh</span>. Trở thành cơ quan đầu não bên tả của Hoàng đế, tạo nên hệ thống <span class='keyword'>kiểm soát chéo, ràng rịt lẫn nhau</span> giữa các cơ quan bộ viện để đạt đến trị bình."
+    const answerKeyData = {
+      '1': {
+        name: 'Nội Các',
+        answers: [
+          '<strong>Tên gọi:</strong> Nội các (ban đầu là Văn thư phòng từ 1820, đổi tên năm 1829)',
+          '<strong>Thành phần:</strong> 4 viên đại thần (2 chánh Tam phẩm, 2 chánh Tứ phẩm), 28-34 thuộc viên, chia 4 tào: Thượng bảo, Ký chú, Đồ thư, Biểu bạ',
+          '<strong>Nhiệm vụ:</strong> Cơ quan văn phòng của vua, giữ sổ sách, coi giữ tài liệu, giám sát quyền lực 6 bộ, lưu giữ tư liệu quốc gia',
+          '<strong>Ý nghĩa:</strong> Một phần của hệ thống kiểm soát chéo (cùng Cơ mật viện, Lục bộ, Ngũ quân Đô thống phủ), tăng cường quyền kiểm soát của vua'
+        ]
       },
-      "Cơ mật viện": {
-        tenGoi: "Cơ quan <span class='keyword'>Cơ mật viện</span>. Được thành lập vào <span class='keyword'>năm 1834 dưới thời vua Minh Mệnh</span> trên cơ sở cải tổ Tứ trụ đại thần, châm chước theo mô hình Khu mật nhà Tống và Xứ quân cơ nhà Thanh.",
-        thanhPhan: "Đứng đầu là <span class='keyword'>4 viên đại thần</span> (hoặc từ 2-3 viên), tuyển từ quan văn võ từ <span class='keyword'>Tam phẩm trở lên</span>. Thuộc viên có <span class='keyword'>8 người</span> (Ngũ phẩm đến Thất phẩm) tuyển chọn cẩn thận từ Lục bộ và các tự, viện. Từ năm 1836, chia làm 2 ban: Nam chương kinh (sau đổi thành <span class='keyword'>Nam ty</span>) và Bắc chương kinh (sau đổi thành <span class='keyword'>Bắc ty</span>).",
-        nhiemVu: "Là <span class='keyword'>hội đồng tư vấn tối cao cho Hoàng đế</span> về các việc quân quốc trọng sự. Chuyên phụ trách hoạch định chiến lược quân cơ, nội an, bang giao, phát triển kinh tế, văn hóa, dân sinh, đồng thời <span class='keyword'>giám sát triều chính</span> và bảo quản tài liệu tối mật.",
-        yNghia: "Là một <span class='keyword'>bước tiến quan trọng</span> trong tổ chức bộ máy nhà nước. Trở thành cơ quan đầu não bên hữu của vua, phối hợp hành động cùng Lục bộ và Nội các, giúp nhà vua điều hành chính sách vĩ mô vô cùng <span class='keyword'>chu đáo, sâu sát và bảo mật</span>."
+      '2': {
+        name: 'Cơ Mật Viện',
+        answers: [
+          '<strong>Tên gọi:</strong> Cơ mật viện (thành lập năm 1834, tham khảo từ nhà Thanh)',
+          '<strong>Thành phần:</strong> 4 viên đại thần từ Tam phẩm trở lên, 8 thuộc viên (Ngũ-Thất phẩm), chia 2 ban: Nam ty và Bắc ty (từ 1836-1837)',
+          '<strong>Nhiệm vụ:</strong> Hội đồng tư vấn tối cao cho vua, hoạch định chiến lược quân cơ-nội an-bang giao, phát triển kinh tế-văn hóa-dân sinh, giám sát công việc triều chính',
+          '<strong>Ý nghĩa:</strong> Công cụ tập quyền cho vua, kiểm soát quyền hành 6 bộ, đảm bảo sự vận hành chặt chẽ của bộ máy nhà nước chuyên chế'
+        ]
       },
-      "Lục bộ": {
-        tenGoi: "Hệ thống <span class='keyword'>Lục bộ</span> (6 bộ), bao gồm: <span class='keyword'>Lại bộ, Hộ bộ, Lễ bộ, Binh bộ, Hình bộ, Công bộ</span>.",
-        thanhPhan: "Thời Gia Long đặt Thượng thư, Tả - Hữu Tham tri và thuộc viên Lệnh sử ty. Thời Minh Mệnh, hoàn thiện với <span class='keyword'>Thượng thư (chánh Nhị phẩm)</span>, Tả - Hữu Tham tri, đặt thêm <span class='keyword'>Tả - Hữu Thị lang (chánh Tam phẩm)</span>, Lang trung, Viên ngoại lang, Chủ sự, Tư vụ... Mỗi bộ có một văn phòng riêng (Bản ty đổi thành Ấn tào, sau là <span class='keyword'>Ấn ty</span>) và từ 3 đến 5 <span class='keyword'>Ty Thanh lại</span> quản lý theo khu vực.",
-        nhiemVu: "Chịu trách nhiệm chỉ đạo và thực thi <span class='keyword'>toàn bộ công việc hành pháp chung</span> của quốc gia theo lĩnh vực chuyên biệt. Hoạt động theo nguyên tắc <span class='keyword'>\"Lục bộ tương thông\"</span> (phối hợp lẫn nhau). Tuy nhiên, quyền lực bị giới hạn, chủ yếu đóng vai trò <span class='keyword'>chấp hành, kiến nghị hoặc tư vấn</span> dưới sự kiểm soát tối cao của vua.",
-        yNghia: "Là <span class='keyword'>nền tảng hành chính trung ương</span> đảm bảo tính quy củ và <span class='keyword'>chuyên môn hóa</span> sâu sắc. Việc kiện toàn Lục bộ củng cố quyền lực tập trung của Hoàng đế, phục vụ đắc lực cho việc cai trị diện rộng."
+      '3': {
+        name: 'Lục Bộ',
+        answers: [
+          '<strong>Tên gọi:</strong> Lục bộ (Lại, Hộ, Lễ, Binh, Hình, Công)',
+          '<strong>Thành phần:</strong> Mỗi bộ có Thượng thư (Nhị phẩm), Tả-Hữu Tham tri (Nhị phẩm), Tả-Hữu Thị lang (Tam phẩm), Lang trung, Viên ngoại lang, Tư vụ, Chủ sự, các ty trực',
+          '<strong>Nhiệm vụ:</strong> Quản lý chuyên ngành (nhân sự, tài chính, lễ nghi, quân sự, pháp luật, xây dựng), chấp hành chỉ dụ của vua, kiến nghị chính sách',
+          '<strong>Ý nghĩa:</strong> Nền tảng hệ thống hành chính chuyên môn hóa, nhưng quyền hành tối cao vẫn ở vua (được kiểm soát bởi Nội các và Cơ mật viện)'
+        ]
       },
-      "Đô sát viện": {
-        tenGoi: "Cơ quan <span class='keyword'>Đô sát viện</span>. Được đổi tên từ <span class='keyword'>Ngự sử đài (thời Lê) vào năm 1832</span> dưới thời Minh Mệnh, dựa theo điển lễ nhà Thanh.",
-        thanhPhan: "Đứng đầu là <span class='keyword'>Tả - Hữu Đô ngự sử</span> (ngang Thượng thư) và Tả - Hữu Phó Đô ngự sử (ngang Tham tri). Thuộc viên gồm <span class='keyword'>Lục khoa Cấp sự trung</span> và <span class='keyword'>16 đạo Giám sát ngự sử</span> (đều hàm chánh Ngũ phẩm), cùng Lục sự và các Thư lại.",
-        nhiemVu: "Chuyên trách việc <span class='keyword'>thanh tra, giám sát và đàn hặc</span> quan lại. Lục khoa giám sát chặt chẽ hành vi của Lục bộ và các nha viện trung ương; 16 đạo giám sát các địa phương trên cả nước nhằm phát hiện tệ tham ô, trễ nải. Có quyền <span class='keyword'>hặc tâu lẫn nhau</span> và phối hợp với Hình bộ, Đại lý tự thành <span class='keyword'>Tam pháp ty</span> để giải quyết hình án.",
-        yNghia: "Công cụ tối cao của nhà vua giúp <span class='keyword'>kiểm soát quyền lực quan lại</span>, ngăn chặn hữu hiệu nạn tham nhũng, lạm quyền, nâng cao tính kỷ cương, pháp luật, tạo dựng một <span class='keyword'>chính quyền trong sạch, hiệu quả</span>."
+      '4': {
+        name: 'Đô Sát Viện',
+        answers: [
+          '<strong>Tên gọi:</strong> Đô sát viện (thành lập năm 1832, thay Ngự sử đài, tham khảo nhà Thanh)',
+          '<strong>Thành phần:</strong> Tả-Hữu Đô ngự sử (ngang Thượng thư), Tả-Hữu Phó Đô ngự sử (ngang Tham tri), Lục khoa Cấp sự trung, 16 đạo Giám sát ngự sử (Ngũ phẩm)',
+          '<strong>Nhiệm vụ:</strong> Giám sát 6 bộ và các viện tại Kinh đô, giám sát địa phương 16 đạo, kiểm xét tham ô-chậm trễ-trái phép, giám sát lẫn nhau tạo sự khách quan, quản lý Tam pháp ty (Hình bộ-Đô sát-Đại lý)',
+          '<strong>Ý nghĩa:</strong> Công cụ quyền lực để vua kiểm soát quan lại, ngăn tham nhũng, đảm bảo trong sạch bộ máy, hỗ trợ hệ thống kiểm soát chéo tập trung vua quyền'
+        ]
       }
     };
 
-    let teacherCachedData = null; 
-    let currentSelectedGroup = ""; 
-
-    function switchMainTab(tab) {
-      if (tab === 'student') {
-        document.getElementById('tab-student').classList.remove('hidden');
-        document.getElementById('tab-teacher').classList.add('hidden');
-        document.getElementById('btn-tab-student').classList.add('tab-active', 'bg-white');
-        document.getElementById('btn-tab-student').classList.remove('text-slate-500', 'bg-slate-50');
-        document.getElementById('btn-tab-teacher').classList.remove('tab-active', 'bg-white');
-        document.getElementById('btn-tab-teacher').classList.add('text-slate-500', 'bg-slate-50');
-      } else {
-        document.getElementById('tab-student').classList.add('hidden');
-        document.getElementById('tab-teacher').classList.remove('hidden');
-        document.getElementById('btn-tab-teacher').classList.add('tab-active', 'bg-white');
-        document.getElementById('btn-tab-teacher').classList.remove('text-slate-500', 'bg-slate-50');
-        document.getElementById('btn-tab-student').classList.remove('tab-active', 'bg-white');
-        document.getElementById('btn-tab-student').classList.add('text-slate-500', 'bg-slate-50');
+    // ===== DATA SDK HANDLER =====
+    const dataHandler = {
+      onDataChanged(data) {
+        allSubmissions = data || [];
+        updateTeacherDashboard();
       }
+    };
+
+    // ===== UI NAVIGATION =====
+    function selectGroup(id, name) {
+      currentGroupId = id;
+      currentGroupName = name;
+      document.getElementById('step-group-selection').classList.add('hidden');
+      document.getElementById('step-members').classList.remove('hidden');
+      document.getElementById('selected-group-name').textContent = name;
+      lucide.createIcons();
     }
 
-    function startStudentTask() {
-      const group = document.getElementById('student-group-select').value;
-      const members = document.getElementById('student-members-input').value.trim();
-      
-      if (!group) {
-        alert("Vui lòng chọn nhóm thảo luận của em!");
-        return;
-      }
-      if (!members) {
-        alert("Vui lòng điền tên các thành viên trong nhóm!");
-        return;
-      }
-      
-      currentSelectedGroup = group;
-      
-      document.getElementById('display-group-name').innerText = "NHÓM: " + group.toUpperCase();
-      document.getElementById('display-group-material').innerText = materials[group];
-      
-      document.getElementById('student-setup-step').classList.add('hidden');
-      document.getElementById('student-work-step').classList.remove('hidden');
-    }
-
-    function backToSetup() {
-      document.getElementById('student-work-step').classList.add('hidden');
-      document.getElementById('student-setup-step').classList.remove('hidden');
-    }
-
-    function submitTask() {
-      const btnSubmit = document.getElementById('btn-submit-student');
-      const tenGoi = document.getElementById('ans-tenGoi').value.trim();
-      const thanhPhan = document.getElementById('ans-thanhPhan').value.trim();
-      const nhiemVu = document.getElementById('ans-nhiemVu').value.trim();
-      const yNghia = document.getElementById('ans-yNghia').value.trim();
-      const members = document.getElementById('student-members-input').value.trim();
-
-      if (!tenGoi || !thanhPhan || !nhiemVu || !yNghia) {
-        alert("Các em hãy thảo luận và điền đầy đủ cả 4 mục nhé!");
-        return;
-      }
-
-      const payload = {
-        nhom: currentSelectedGroup,
-        thanhVien: members,
-        tenGoi: tenGoi,
-        thanhPhan: thanhPhan,
-        nhiemVu: nhiemVu,
-        yNghia: yNghia
-      };
-
-      btnSubmit.innerHTML = "ĐANG LƯU DỮ LIỆU... ⏳";
-      btnSubmit.disabled = true;
-      btnSubmit.classList.add('opacity-75');
-
-      // 1. ĐƯỜNG LINK WEB APP GOOGLE BẠN VỪA TRIỂN KHAI (Dán vào giữa 2 dấu nháy đơn)
-  const webAppUrl = 'https://script.google.com/macros/s/AKfycbyo3VQn_SEol8nVA0ARKBJtr-QCMWjBFRg3Mraq758DVZCokNSpZC4AUsd4Fv4B0ucW/exec';
-
-  // 2. TỰ ĐỘNG THU THẬP DỮ LIỆU ĐỂ GỬI SANG GOOGLE SHEETS
-  const data = {
-    Nhom: currentSelectedGroup,
-    ThanhVien: members,
-    TenGoi: document.getElementById('ans-tenGoi')?.value || tenGoi1,
-    ThanhPhan: document.getElementById('ans-thanhPhan')?.value || '',
-    NhiemVu: document.getElementById('ans-nhiemVu')?.value || '',
-    YNghem: document.getElementById('ans-yNghia')?.value || ''
-  };
-
-  // 3. LỆNH FETCH ĐỂ GỬI DỮ LIỆU VÀ GIẢI PHÓNG TRẠNG THÁI ĐƠ
-  fetch(webAppUrl, {
-    method: 'POST',
-    mode: 'no-cors', 
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(function() {
-    // Mở khóa trạng thái treo đơ cho nút bấm
-    btnSubmit.innerHTML = "NỘP DỮ LIỆU THẢO LUẬN ✔️";
-    btnSubmit.disabled = false;
-    btnSubmit.classList.remove('opacity-75');
-
-    // Hiển thị phần xem lại kết quả (giữ nguyên logic cũ của bạn)
-    document.getElementById('student-work-step').classList.add('hidden');
-    document.getElementById('student-review-step').classList.remove('hidden');
-    
-    // Reset lại form để xóa dữ liệu cũ trong các ô nhập
-    resetStudentForm();
-    
-    alert("Nộp bài thảo luận thành công!");
-  })
-  .catch(function(error) {
-    // Mở khóa nút bấm nếu lỗi mạng để học sinh bấm nộp lại
-    btnSubmit.innerHTML = "THỬ LẠI ❌";
-    btnSubmit.disabled = false;
-    btnSubmit.classList.remove('opacity-75');
-    alert("Lỗi kết nối mạng: " + error.toString());
-  });
-    }
-
-    function resetStudentForm() {
-      document.getElementById('ans-tenGoi').value = "";
-      document.getElementById('ans-thanhPhan').value = "";
-      document.getElementById('ans-nhiemVu').value = "";
-      document.getElementById('ans-yNghia').value = "";
-      document.getElementById('student-group-select').value = "";
-      document.getElementById('student-members-input').value = "";
-      
-      document.getElementById('student-review-step').classList.add('hidden');
-      document.getElementById('student-setup-step').classList.remove('hidden');
-    }
-
-    // --- PHẦN GIÁO VIÊN ---
-    let teacherPasswordSaved = "";
-
-    function loginTeacher() {
-      const pass = document.getElementById('teacher-password').value;
-      const btn = document.getElementById('btn-login');
-      if (!pass) {
-        alert("Vui lòng điền mã bảo mật!");
-        return;
-      }
-      
-      btn.innerText = "Đang kiểm tra...";
-      btn.disabled = true;
-
-  https://www.google.com/
-    
-    // Bỏ hàng tiêu đề đầu tiên, chỉ lấy các hàng dữ liệu bài nộp của học sinh
-    const studentData = rows.slice(1); 
-    
-    return ContentService.createTextOutput(JSON.stringify({ success: true, data: studentData }))
-                         .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  // Mặc định khởi tạo giao diện nếu chạy trực tiếp trên hệ thống của Google
-  return HtmlService.createTemplateFromFile('index')
-    .evaluate()
-    .setTitle('Hệ Thống Thảo Luận Nhóm - Triều Nguyễn')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-}
-      if (typeof updateTeacherDashboard === 'function') {
-        updateTeacherDashboard(data.data);
-      }
-      alert("Đăng nhập quản trị thành công!");
-    } else {
-      // Đăng nhập sai mật khẩu
-      const errMsg = document.getElementById('auth-error-msg');
-      if (errMsg) errMsg.classList.remove('hidden');
-      alert("Mật khẩu không chính xác!");
-    }
-  })
-  .catch(error => {
-    // Giải phóng trạng thái đơ nếu mạng lỗi
-    btn.innerText = "Mở Khóa";
-    btn.disabled = false;
-    alert("Lỗi kết nối đến hệ thống Google: " + error.toString());
-  });
-    }
-
-    function refreshData() {
-      google.script.run.withSuccessHandler(function(response) {
-        if (response.success) {
-          updateTeacherDashboard(response.data);
-          alert("Đã đồng bộ dữ liệu mới nhất!");
-        } else {
-          alert("Lỗi tải dữ liệu: " + response.error);
-        }
-      }).getTeacherData(teacherPasswordSaved);
-    }
-
-    function updateTeacherDashboard(data) {
-      teacherCachedData = data;
-      const groups = ["Nội các", "Cơ mật viện", "Lục bộ", "Đô sát viện"];
-      groups.forEach((g, index) => {
-        const el = document.getElementById(`status-group-${index + 1}`);
-        if (data[g]) {
-          const time = new Date(data[g].timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-          el.innerHTML = `<span class="text-emerald-600 font-bold flex items-center"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Đã nộp (${time})</span>`;
-        } else {
-          el.innerHTML = `<span class="text-slate-400 italic flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Chưa nộp bài</span>`;
-        }
+    function backToGroupSelection() {
+      currentGroupId = null;
+      currentGroupName = null;
+      document.getElementById('step-members').classList.add('hidden');
+      document.getElementById('step-group-selection').classList.remove('hidden');
+      ['member-1', 'member-2', 'member-3', 'member-4'].forEach(id => {
+        document.getElementById(id).value = '';
       });
     }
 
-    function viewGroupSubmission(groupName) {
-      if (!teacherCachedData || !teacherCachedData[groupName]) {
-        alert(`Nhóm [${groupName}] chưa nộp bài!`);
+    function proceedToTask() {
+      const members = [
+        document.getElementById('member-1').value,
+        document.getElementById('member-2').value,
+        document.getElementById('member-3').value,
+        document.getElementById('member-4').value
+      ].filter(m => m.trim());
+
+      if (members.length < 2) {
+        alert('Vui lòng nhập ít nhất 2 thành viên');
         return;
       }
+
+      document.getElementById('step-members').classList.add('hidden');
+      document.getElementById('step-task').classList.remove('hidden');
+      document.getElementById('task-group-name').textContent = `Nhóm ${currentGroupId}: ${currentGroupName}`;
+      document.getElementById('task-members').textContent = members.join(', ');
+      document.getElementById('task-content').innerHTML = groupsData[currentGroupId].taskContent;
       
-      const info = teacherCachedData[groupName];
-      document.getElementById('viewer-title').innerText = `BÀI LÀM CỦA HỌC SINH - NHÓM: ${groupName.toUpperCase()}`;
-      document.getElementById('viewer-timestamp').innerText = "Gửi lúc: " + new Date(info.timestamp).toLocaleString();
-      document.getElementById('viewer-content-members').innerHTML = `<strong>👤 Thành viên tham gia:</strong> <span class="text-indigo-800 font-bold ml-2">${info.thanhVien}</span>`;
+      ['answer-1', 'answer-2', 'answer-3', 'answer-4'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
       
-      document.getElementById('view-section-a').innerText = info.tenGoi;
-      document.getElementById('view-section-b').innerText = info.thanhPhan;
-      document.getElementById('view-section-c').innerText = info.nhiemVu;
-      document.getElementById('view-section-d').innerText = info.yNghia;
-      
-      document.getElementById('teacher-viewer-section').classList.remove('hidden');
-      document.getElementById('teacher-viewer-section').scrollIntoView({ behavior: 'smooth' });
+      lucide.createIcons();
     }
 
-    function viewTargetAnswer(groupName) {
-      const ans = answers[groupName];
-      document.getElementById('viewer-title').innerText = `🔑 ĐÁP ÁN CHUẨN TỪ KHÓA - NHÓM: ${groupName.toUpperCase()}`;
-      document.getElementById('viewer-timestamp').innerText = "Chế độ hiển thị đáp án";
-      document.getElementById('viewer-content-members').innerHTML = `<span class="text-red-700 font-bold flex items-center"><svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg> Dưới đây là các từ khóa (keywords) màu đỏ cần thiết để chấm điểm bài làm cho học sinh.</span>`;
-      
-      document.getElementById('view-section-a').innerHTML = ans.tenGoi;
-      document.getElementById('view-section-b').innerHTML = ans.thanhPhan;
-      document.getElementById('view-section-c').innerHTML = ans.nhiemVu;
-      document.getElementById('view-section-d').innerHTML = ans.yNghia;
-      
-      document.getElementById('teacher-viewer-section').classList.remove('hidden');
-      document.getElementById('teacher-viewer-section').scrollIntoView({ behavior: 'smooth' });
+    function backToMembers() {
+      document.getElementById('step-task').classList.add('hidden');
+      document.getElementById('step-members').classList.remove('hidden');
     }
 
-    function closeViewer() {
-      document.getElementById('teacher-viewer-section').classList.add('hidden');
+    // ===== STUDENT SUBMISSION =====
+    async function submitTask() {
+      const members = [
+        document.getElementById('member-1').value,
+        document.getElementById('member-2').value,
+        document.getElementById('member-3').value,
+        document.getElementById('member-4').value
+      ].filter(m => m.trim());
+
+      const answers = {
+        ten_co_quan: document.getElementById('answer-1').value,
+        thanh_phan: document.getElementById('answer-2').value,
+        nhiem_vu_vai_tro: document.getElementById('answer-3').value,
+        y_nghia: document.getElementById('answer-4').value
+      };
+
+      if (!answers.ten_co_quan || !answers.thanh_phan || !answers.nhiem_vu_vai_tro || !answers.y_nghia) {
+        showMessage('Vui lòng điền đầy đủ tất cả các câu trả lời!', 'error');
+        return;
+      }
+
+      const submitBtn = event.target;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader" style="display: inline; width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"></i> Đang nộp...';
+
+      const result = await window.dataSdk.create({
+        group_id: currentGroupId,
+        group_name: currentGroupName,
+        members: members.join(' | '),
+        ...answers,
+        submission_time: new Date().toISOString()
+      });
+
+      if (result.isOk) {
+        showMessage('✓ Nộp bài thành công! Bài làm của nhóm bạn đã được lưu.', 'success');
+        setTimeout(() => backToGroupSelection(), 2000);
+      } else {
+        showMessage('Lỗi nộp bài. Vui lòng thử lại.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send" style="display: inline; width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"></i> Nộp Bài';
+      }
+      lucide.createIcons();
     }
 
-    function triggerResetData() {
-      const confirmPass = prompt("CẢNH BÁO: Hành động này sẽ xóa sạch dữ liệu trên Google Sheet để chuẩn bị cho lớp học mới.\nVui lòng nhập lại mật khẩu 'giaovien' để xác nhận:");
-      
-      if (confirmPass === null) return; 
-      
-      google.script.run.withSuccessHandler(function(response) {
-        if (response.success) {
-          alert("Thành công! Đã dọn dẹp sạch dữ liệu cho lớp học tiếp theo.");
-          closeViewer();
-          refreshData();
+    async function viewMySubmission() {
+      const members = [
+        document.getElementById('member-1').value,
+        document.getElementById('member-2').value,
+        document.getElementById('member-3').value,
+        document.getElementById('member-4').value
+      ].filter(m => m.trim());
+
+      const mySubmission = allSubmissions.find(s => 
+        s.group_id === currentGroupId && 
+        s.group_name === currentGroupName &&
+        s.members === members.join(' | ')
+      );
+
+      if (!mySubmission) {
+        alert('Bạn chưa nộp bài cho nhóm này');
+        return;
+      }
+
+      const msg = `
+<strong>Bài làm của bạn:</strong>
+1. Tên cơ quan: ${mySubmission.ten_co_quan}
+2. Thành phần: ${mySubmission.thanh_phan}
+3. Nhiệm vụ: ${mySubmission.nhiem_vu_vai_tro}
+4. Ý nghĩa: ${mySubmission.y_nghia}
+      `;
+      alert(msg);
+    }
+
+    function showMessage(text, type) {
+      const msgDiv = document.getElementById('submission-message');
+      msgDiv.classList.remove('hidden');
+      msgDiv.className = type === 'success' 
+        ? 'mt-6 p-4 rounded-lg bg-green-100 border-2 border-green-400 text-green-800'
+        : 'mt-6 p-4 rounded-lg bg-red-100 border-2 border-red-400 text-red-800';
+      msgDiv.innerHTML = text;
+    }
+
+    // ===== TAB SWITCHING =====
+    document.getElementById('student-tab').addEventListener('click', () => {
+      document.getElementById('student-view').classList.remove('hidden');
+      document.getElementById('teacher-view').classList.add('hidden');
+      document.getElementById('student-tab').classList.add('active');
+      document.getElementById('teacher-tab').classList.remove('active');
+      lucide.createIcons();
+    });
+
+    document.getElementById('teacher-tab').addEventListener('click', () => {
+      document.getElementById('teacher-view').classList.remove('hidden');
+      document.getElementById('student-view').classList.add('hidden');
+      document.getElementById('teacher-tab').classList.add('active');
+      document.getElementById('student-tab').classList.remove('active');
+      lucide.createIcons();
+    });
+
+    // ===== TEACHER FUNCTIONS =====
+    function teacherLogin() {
+      const password = document.getElementById('teacher-password').value;
+      if (password === TEACHER_PASSWORD) {
+        isTeacherLoggedIn = true;
+        document.getElementById('teacher-login').classList.add('hidden');
+        document.getElementById('teacher-dashboard').classList.remove('hidden');
+        updateTeacherDashboard();
+        lucide.createIcons();
+      } else {
+        document.getElementById('login-error').classList.remove('hidden');
+        document.getElementById('login-error').textContent = 'Mật khẩu sai!';
+      }
+    }
+
+    function teacherLogout() {
+      isTeacherLoggedIn = false;
+      document.getElementById('teacher-dashboard').classList.add('hidden');
+      document.getElementById('submission-view').classList.add('hidden');
+      document.getElementById('teacher-login').classList.remove('hidden');
+      document.getElementById('teacher-password').value = '';
+      document.getElementById('login-error').classList.add('hidden');
+      lucide.createIcons();
+    }
+
+    function updateTeacherDashboard() {
+      for (let i = 1; i <= 4; i++) {
+        const groupSubmissions = allSubmissions.filter(s => s.group_id === i.toString());
+        const statusEl = document.getElementById(`group-${i}-status`);
+        if (groupSubmissions.length > 0) {
+          statusEl.innerHTML = `<span class="text-green-600 font-semibold">✓ Đã nộp (${groupSubmissions.length} lần)</span>`;
         } else {
-          alert(response.error);
+          statusEl.innerHTML = '<span class="text-slate-600">Chưa có bài nộp</span>';
         }
-      }).clearAllData(confirmPass);
+      }
     }
+
+    function viewGroupSubmission(groupId, groupName) {
+      document.getElementById('teacher-dashboard').classList.add('hidden');
+      document.getElementById('submission-view').classList.remove('hidden');
+      document.getElementById('submission-group-title').textContent = `Nhóm ${groupId}: ${groupName}`;
+
+      const groupSubmissions = allSubmissions.filter(s => s.group_id === groupId);
+      const listDiv = document.getElementById('submissions-list');
+      const noSubmissionDiv = document.getElementById('no-submission');
+
+      if (groupSubmissions.length === 0) {
+        listDiv.innerHTML = '';
+        noSubmissionDiv.classList.remove('hidden');
+      } else {
+        noSubmissionDiv.classList.add('hidden');
+        listDiv.innerHTML = groupSubmissions.map((sub, idx) => `
+          <div class="border-2 border-slate-300 rounded-lg p-4 bg-slate-50">
+            <div class="flex justify-between mb-3">
+              <h4 class="font-bold text-slate-800">Lần nộp ${idx + 1}</h4>
+              <span class="text-xs text-slate-600">${new Date(sub.submission_time).toLocaleString('vi-VN')}</span>
+            </div>
+            <p class="text-sm text-slate-700 mb-3"><strong>Thành viên:</strong> ${sub.members}</p>
+            <div class="space-y-3">
+              <div><strong>1. Tên cơ quan:</strong> <p class="text-slate-700 mt-1">${sub.ten_co_quan}</p></div>
+              <div><strong>2. Thành phần:</strong> <p class="text-slate-700 mt-1">${sub.thanh_phan}</p></div>
+              <div><strong>3. Nhiệm vụ & vai trò:</strong> <p class="text-slate-700 mt-1">${sub.nhiem_vu_vai_tro}</p></div>
+              <div><strong>4. Ý nghĩa:</strong> <p class="text-slate-700 mt-1">${sub.y_nghia}</p></div>
+            </div>
+          </div>
+        `).join('');
+      }
+      lucide.createIcons();
+    }
+
+    function backToDashboard() {
+      document.getElementById('submission-view').classList.add('hidden');
+      document.getElementById('teacher-dashboard').classList.remove('hidden');
+      document.getElementById('answer-key').classList.add('hidden');
+    }
+
+    function showAnswerKey() {
+      const groupId = document.getElementById('submission-group-title').textContent.split(':')[0].replace('Nhóm ', '');
+      const answerKey = answerKeyData[groupId];
+      const keyDiv = document.getElementById('answer-key-content');
+
+      if (answerKey) {
+        keyDiv.innerHTML = answerKey.answers.map(ans => `
+          <div class="bg-white p-3 rounded border-l-4 border-amber-600">
+            ${ans}
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('answer-key').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function clearDataPrompt() {
+      document.getElementById('clear-data-confirm').classList.remove('hidden');
+    }
+
+    async function confirmClearData() {
+      const password = document.getElementById('clear-password').value;
+      if (password !== TEACHER_PASSWORD) {
+        alert('Mật khẩu sai!');
+        return;
+      }
+
+      // Xóa tất cả submission
+      for (const submission of allSubmissions) {
+        await window.dataSdk.delete(submission);
+      }
+
+      document.getElementById('clear-data-confirm').classList.add('hidden');
+      document.getElementById('clear-password').value = '';
+      alert('Đã xóa tất cả dữ liệu!');
+      lucide.createIcons();
+    }
+
+    function cancelClearData() {
+      document.getElementById('clear-data-confirm').classList.add('hidden');
+      document.getElementById('clear-password').value = '';
+    }
+
+    // ===== INIT =====
+    async function init() {
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        console.error('SDK initialization failed');
+      }
+      lucide.createIcons();
+    }
+
+    window.elementSdk.init({
+      defaultConfig: { app_title: 'Hệ thống Nhiệm vụ Học nhóm - Bộ máy nhà nước triều Nguyễn' },
+      onConfigChange: async (config) => {
+        // Update app title if needed
+      },
+      mapToCapabilities: (config) => ({
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      }),
+      mapToEditPanelValues: (config) => new Map([['app_title', config.app_title]])
+    });
+
+    init();
   </script>
-</body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a06157b44b599c94',t:'MTc4MDUxNzQ0MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
