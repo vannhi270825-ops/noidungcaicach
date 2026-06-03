@@ -504,21 +504,7 @@
       btn.innerText = "Đang kiểm tra...";
       btn.disabled = true;
 
-    // 2. Hàm khởi tạo giao diện và xử lý yêu cầu lấy dữ liệu từ GitHub sang
-function doGet(e) {
-  if (e && e.parameter && e.parameter.action === "getTeacherData") {
-    const pass = e.parameter.pass;
-    
-    // Kiểm tra mật khẩu (khớp với mật khẩu TEACHER_PASSWORD của bạn)
-    if (pass !== TEACHER_PASSWORD) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Sai mật khẩu" }))
-                           .setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    // Kết nối đến file Google Sheets của bạn bằng ID để lấy dữ liệu trả về GitHub
-    const ss = SpreadsheetApp.openById('1lI1KiIHAkRzGbEvnYlpLUwSGFlqe7uapKoeQCF-QvM8');
-    const sheet = ss.getSheetByName("Submissions");
-    const rows = sheet.getDataRange().getValues();
+  https://www.google.com/
     
     // Bỏ hàng tiêu đề đầu tiên, chỉ lấy các hàng dữ liệu bài nộp của học sinh
     const studentData = rows.slice(1); 
