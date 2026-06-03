@@ -504,21 +504,38 @@
       btn.innerText = "Đang kiểm tra...";
       btn.disabled = true;
 
-      google.script.run.withSuccessHandler(function(response) {
-        btn.innerText = "Mở Khóa";
-        btn.disabled = false;
+     // 1. GỬI YÊU CẦU KIỂM TRA MẬT KHẨU VÀ LẤY DỮ LIỆU VỀ GITHUB
+  fetch(webAppUrl + '?action=getTeacherData&pass=' + encodeURIComponent(pass))
+  .then(response => response.json())
+  .then(data => {
+    // Mở khóa nút bấm ngay khi có phản hồi
+    btn.innerText = "Mở Khóa";
+    btn.disabled = false;
 
-        if (response.success) {
-          teacherPasswordSaved = pass;
-          document.getElementById('teacher-auth-box').classList.add('hidden');
-          document.getElementById('teacher-dashboard').classList.remove('hidden');
-          updateTeacherDashboard(response.data);
-        } else {
-          const errMsg = document.getElementById('auth-error-msg');
-          errMsg.innerText = response.error;
-          errMsg.classList.remove('hidden');
-        }
-      }).getTeacherData(pass);
+    if (data.success) {
+      // Đăng nhập đúng: Chạy toàn bộ logic hiển thị giao diện cũ của bạn
+      teacherPasswordSaved = pass;
+      document.getElementById('teacher-auth-box').classList.add('hidden');
+      document.getElementById('teacher-dashboard').classList.remove('hidden');
+      
+      // Đổ dữ liệu học sinh thảo luận vào bảng điều khiển của bạn
+      if (typeof updateTeacherDashboard === 'function') {
+        updateTeacherDashboard(data.data);
+      }
+      alert("Đăng nhập quản trị thành công!");
+    } else {
+      // Đăng nhập sai mật khẩu
+      const errMsg = document.getElementById('auth-error-msg');
+      if (errMsg) errMsg.classList.remove('hidden');
+      alert("Mật khẩu không chính xác!");
+    }
+  })
+  .catch(error => {
+    // Giải phóng trạng thái đơ nếu mạng lỗi
+    btn.innerText = "Mở Khóa";
+    btn.disabled = false;
+    alert("Lỗi kết nối đến hệ thống Google: " + error.toString());
+  });
     }
 
     function refreshData() {
