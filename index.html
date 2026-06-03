@@ -12,6 +12,7 @@
     .scroll-area::-webkit-scrollbar { width: 6px; }
     .scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
   </style>
+  <!-- Đã dọn dẹp các script SDK cũ để tránh xung đột gây lỗi mạng -->
 </head>
 <body class="h-full bg-gray-50 text-gray-800 overflow-auto scroll-area">
   
@@ -104,14 +105,14 @@
   <script>
     lucide.createIcons();
 
-    // LINK API MỚI NHẤT CỦA BẠN (Đã liên kết với Sheet: DuLieuNhom)
-    const API_URL = 'https://script.google.com/macros/s/AKfycby3IbOEVRO0BkaAWjp1Sxkvd2xgt59XbRuaygUu_-LI6rIy87JbvpC4fYEtFpbtq08R/exec';
+    // LINK API MỚI NHẤT BẠN VỪA CUNG CẤP
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxmGqfUm2cb7j7t6B9_tf5CAvwnyZ2teggQVYp9OcotCLmQTHlciJLfLOErus66exGx/exec';
 
     async function submitGroupWork() {
       const btn = document.getElementById('btn-submit');
       const msg = document.getElementById('submit-msg');
       
-      // Lấy dữ liệu từ các ô nhập
+      // Lấy dữ liệu
       const tenNhom = document.getElementById('input-TenNhom').value.trim();
       const thanhVien = document.getElementById('input-ThanhVien').value.trim();
       const tenGoi = document.getElementById('input-TenGoiCoQuan').value.trim();
@@ -119,13 +120,13 @@
       const nhiemVu = document.getElementById('input-NhiemVu').value.trim();
       const yNghia = document.getElementById('input-YNghia').value.trim();
 
-      // Kiểm tra dữ liệu rỗng
+      // Kiểm tra ô trống
       if (!tenNhom || !thanhVien) {
         showMsg(msg, '⚠️ Vui lòng nhập Tên nhóm và Thành viên!', '#dc2626');
         return;
       }
 
-      // Đóng gói dữ liệu - TRÙNG KHỚP VỚI CỘT TRONG GOOGLE SHEETS
+      // Đóng gói dữ liệu (Chữ cái viết hoa phải khớp y chang với Google Sheets)
       const payload = {
         ThoiGian: new Date().toLocaleString('vi-VN'),
         TenNhom: tenNhom,
@@ -136,12 +137,12 @@
         YNghia: yNghia
       };
 
-      // Đổi trạng thái nút thành đang xử lý
+      // Đổi trạng thái nút bấm
       btn.disabled = true;
       btn.innerHTML = '<span class="animate-pulse">Đang đẩy dữ liệu lên hệ thống...</span>';
 
       try {
-        // GỬI DỮ LIỆU ĐI (Đã vá lỗi chặn kết nối CORS bằng text/plain)
+        // Tiến hành gửi lên server với định dạng vượt rào cản mạng (CORS)
         const response = await fetch(API_URL, {
           method: "POST",
           headers: {
@@ -155,7 +156,7 @@
         if (result && result.isOk) {
           showMsg(msg, '✅ Nộp bài thành công! Giáo viên đã nhận được bài làm của nhóm.', '#059669');
           
-          // Xóa trắng form sau khi nộp thành công
+          // Xóa trắng dữ liệu sau khi nộp
           document.getElementById('input-TenNhom').value = '';
           document.getElementById('input-ThanhVien').value = '';
           document.getElementById('input-TenGoiCoQuan').value = '';
@@ -169,7 +170,7 @@
         showMsg(msg, '❌ Lỗi kết nối mạng! Vui lòng kiểm tra lại Internet.', '#dc2626');
         console.error(error);
       } finally {
-        // Phục hồi nút bấm
+        // Trả lại trạng thái nút bấm ban đầu
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i> NỘP BÀI LÊN HỆ THỐNG';
         lucide.createIcons();
@@ -180,7 +181,7 @@
       element.textContent = text;
       element.style.color = color;
       element.classList.remove('hidden');
-      setTimeout(() => element.classList.add('hidden'), 5000); // Ẩn thông báo sau 5 giây
+      setTimeout(() => element.classList.add('hidden'), 5000); 
     }
   </script>
 </body>
